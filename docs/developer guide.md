@@ -49,4 +49,25 @@ $ git branch -d <new_feature_branch>
 
 ## Developing Workflow
 
-TBD
+### Installation
+
+Install gulp as automation tool, and then install dependencies
+
+```
+$ npm install -g gulp
+$ npm install
+```
+
+### Link Package
+
+```
+$ npm link
+```
+
+### Usage
+
+```
+$ sd help
+```
+
+If you want to test your new feature with example project, please refer to [example/README](https://github.com/gocreating/exseed/example)
