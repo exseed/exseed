@@ -1,0 +1,19 @@
+# Dependency directory
+node_modules
+
+# Sublime workspace configuration
+sftp-configuration.json
+
+# Secret
+github
+github.pub
+
+# Log
+*.log
+
+# Build files
+/lib
+/cli
+
+# Others
+.DS_Store

@@ -1,0 +1,40 @@
+{
+  "name": "exseed",
+  "version": "0.1.0",
+  "description": "A highly extensible nodejs framework",
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/exseed/exseed.git"
+  },
+  "keywords": [
+    "node",
+    "framework",
+    "extensible"
+  ],
+  "author": "gocreating",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/exseed/exseed/issues"
+  },
+  "homepage": "https://github.com/exseed/exseed",
+  "bin": {
+    "sd": "cli/index.js"
+  },
+  "devDependencies": {
+    "babel-preset-es2015": "^6.0.14",
+    "babel-preset-stage-0": "^6.0.14",
+    "babel-preset-stage-1": "^6.0.14",
+    "gulp": "^3.9.0",
+    "gulp-babel": "^6.0.0",
+    "gulp-changed": "^1.3.0"
+  },
+  "dependencies": {
+    "express": "^4.13.3",
+    "object-assign": "^4.0.1",
+    "waterline": "^0.10.26"
+  }
+}
