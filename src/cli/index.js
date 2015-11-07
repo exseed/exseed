@@ -26,15 +26,17 @@ gulpLogEvents(gulp);
 
 // watching source files
 gulp.task('watch', () => {
-  return gulp
-    .watch('./src/**/*.js', ['build']);
+  if (program.watch) {
+    return gulp
+      .watch('./src/**/*.js', ['build']);
+  }
 });
 
 // build source files
 gulp.task('build', () => {
   return gulp
     .src('./src/**/*.js')
-    .pipe(changed('./build/debug'))
+    .pipe(gulpif(program.watch, changed('./build/debug')))
     .pipe(gulpif(env.d, sourcemaps.init()))
       .pipe(babel({
         presets: [
