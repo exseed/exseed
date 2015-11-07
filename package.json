@@ -26,6 +26,8 @@
     "sd": "cli/index.js"
   },
   "devDependencies": {
+  },
+  "dependencies": {
     "babel-preset-es2015": "^6.0.14",
     "babel-preset-stage-0": "^6.0.14",
     "babel-preset-stage-1": "^6.0.14",
@@ -34,11 +36,10 @@
     "gulp-changed": "^1.3.0",
     "gulp-if": "^2.0.0",
     "gulp-notify": "^2.2.0",
-    "gulp-sourcemaps": "^1.6.0"
-  },
-  "dependencies": {
+    "gulp-sourcemaps": "^1.6.0",
     "commander": "^2.9.0",
     "express": "^4.13.3",
+    "gulp-util": "^3.0.7",
     "object-assign": "^4.0.1",
     "waterline": "^0.10.26"
   }

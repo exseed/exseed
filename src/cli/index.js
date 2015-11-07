@@ -4,6 +4,57 @@ import {exec} from 'child_process';
 import program from 'commander';
 import pkg from '../package.json';
 
+import gulp from 'gulp';
+import gulpLogEvents from './gulpLogEvents';
+import changed from 'gulp-changed';
+import babel from 'gulp-babel';
+
+/**
+ * Specify gulp tasks
+ */
+
+// since we are calling gulp tasks from node scripts
+// instead of `gulp` command, we use the logging
+// function extracted from gulp's source code
+// to keep logs working properly
+gulpLogEvents(gulp);
+
+var errorHandler = function(err) {
+  console.log(err.toString());
+  this.emit('end');
+};
+
+// watching source files
+gulp.task('watch', function() {
+  return gulp
+    .watch('./src/**/*.js', ['build']);
+});
+
+// build source files
+gulp.task('build', function() {
+  return gulp
+    .src('./src/**/*.js')
+    .pipe(changed('./build/debug'))
+    .pipe(babel({
+      presets: [
+        'es2015',
+        'stage-0',
+        'stage-1',
+      ],
+    }))
+    .on('error', errorHandler)
+    .pipe(gulp.dest('./build/debug'));
+});
+
+// run gulp tasks
+gulp.task('default', function() {
+  gulp.start('build', 'watch');
+});
+
+/**
+ * Definition of commands
+ */
+
 program
   .version(pkg.version)
   .option(
@@ -33,5 +84,5 @@ process.argv[1] = 'sd';
 program.parse(process.argv);
 
 if (!program.args.length) {
-  program.help();
+  gulp.start('default');
 }
