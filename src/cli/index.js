@@ -20,19 +20,19 @@ import nodemon from 'gulp-nodemon';
 // to keep logs working properly
 gulpLogEvents(gulp);
 
-var errorHandler = function(err) {
+const errorHandler = (err) => {
   console.log(err.toString());
   this.emit('end');
 };
 
 // watching source files
-gulp.task('watch', function() {
+gulp.task('watch', () => {
   return gulp
     .watch('./src/**/*.js', ['build']);
 });
 
 // build source files
-gulp.task('build', function() {
+gulp.task('build', () => {
   return gulp
     .src('./src/**/*.js')
     .pipe(changed('./build/debug'))
@@ -67,13 +67,13 @@ gulp.task('nodemon', (cb) => {
         'build/test/**/*',
       ],
     })
-    .on('start', function() {
+    .on('start', () => {
       if (!started) {
         cb();
         started = true;
       }
     })
-    .on('restart', function() {
+    .on('restart', () => {
     });
   } else {
     cb();
@@ -81,7 +81,7 @@ gulp.task('nodemon', (cb) => {
 });
 
 // run gulp tasks
-gulp.task('default', function() {
+gulp.task('default', () => {
   gulp.start('build', 'nodemon', 'watch');
 });
 
