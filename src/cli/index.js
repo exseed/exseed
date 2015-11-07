@@ -5,20 +5,16 @@ import program from 'commander';
 import pkg from '../package.json';
 
 program
-  .version(pkg.version);
+  .version(pkg.version)
+  .option(
+    '-e, --env <env>',
+    'specify environment (development|test|production)',
+    'development');
 
 program
   .command('serve')
   .alias('s')
   .description('launch exseed app')
-  .option(
-    '-e, --env <env>',
-    'specify environment (development|test|production)',
-    'development')
-  .option(
-    '-w, --watch <watch>',
-    'watching the changes of files',
-    false)
   .action((options) => {
     const cmd = 'node ./build/debug/app.js';
     console.log(`execute ${cmd} under ${options.env} environment`);
@@ -31,6 +27,9 @@ program
     nodeApp.stderr.pipe(process.stdout);
   });
 
+// to customize command name in help information
+// ref: https://github.com/tj/commander.js/issues/466
+process.argv[1] = 'sd';
 program.parse(process.argv);
 
 if (!program.args.length) {
