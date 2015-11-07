@@ -8,6 +8,7 @@ import gulp from 'gulp';
 import gulpLogEvents from './gulpLogEvents';
 import changed from 'gulp-changed';
 import babel from 'gulp-babel';
+import nodemon from 'gulp-nodemon';
 
 /**
  * Specify gulp tasks
@@ -46,9 +47,42 @@ gulp.task('build', function() {
     .pipe(gulp.dest('./build/debug'));
 });
 
+gulp.task('nodemon', (cb) => {
+  if (env.d) {
+    let started = false;
+
+    return nodemon({
+      script: 'build/debug/app.js',
+      ext: 'js',
+      env: {
+        NODE_ENV: program.env,
+      },
+      ignore: [
+        'gulpfile.js',
+        'node_modules/**/*',
+        'src/**/*',
+        'build/debug/public/js/*/bundle.js',
+        'build/debug/public/js/common.js',
+        'build/release/**/*',
+        'build/test/**/*',
+      ],
+    })
+    .on('start', function() {
+      if (!started) {
+        cb();
+        started = true;
+      }
+    })
+    .on('restart', function() {
+    });
+  } else {
+    cb();
+  }
+});
+
 // run gulp tasks
 gulp.task('default', function() {
-  gulp.start('build', 'watch');
+  gulp.start('build', 'nodemon', 'watch');
 });
 
 /**
@@ -57,26 +91,21 @@ gulp.task('default', function() {
 
 program
   .version(pkg.version)
+  .usage('[options]')
   .option(
     '-e, --env <env>',
     'specify environment (development|test|production)',
-    'development');
+    'development')
+  .option(
+    '-w, --watch',
+    'watching the changes of files',
+    false);
 
-program
-  .command('serve')
-  .alias('s')
-  .description('launch exseed app')
-  .action((options) => {
-    const cmd = 'node ./build/debug/app.js';
-    console.log(`execute ${cmd} under ${options.env} environment`);
-    let nodeApp = exec(cmd, {
-      env: {
-        NODE_ENV: options.env,
-      },
-    });
-    nodeApp.stdout.pipe(process.stdout);
-    nodeApp.stderr.pipe(process.stdout);
-  });
+const env = {
+  d: program.env === 'development',
+  t: program.env === 'test',
+  p: program.env === 'production',
+};
 
 // to customize command name in help information
 // ref: https://github.com/tj/commander.js/issues/466
