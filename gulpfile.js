@@ -4,12 +4,8 @@ var changed = require('gulp-changed');
 var babel = require('gulp-babel');
 var sourcemaps = require('gulp-sourcemaps');
 var gulpif = require('gulp-if');
+var notify = require("gulp-notify");
 var program = require('commander');
-
-var errorHandler = function(err) {
-  console.log(err.toString());
-  this.emit('end');
-};
 
 program
   .usage('[options]')
@@ -50,7 +46,10 @@ gulp.task('build', function() {
           'stage-1',
         ],
       }))
-      .on('error', errorHandler)
+      .on('error', notify.onError({
+        title: 'babel fail',
+        message: '<%= error.message %>',
+      }))
     .pipe(gulpif(env.d, sourcemaps.write({
       includeContent: false,
       sourceRoot: function(file) {
