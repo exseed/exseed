@@ -3,16 +3,36 @@ import prettyTime from 'gulp/node_modules/pretty-hrtime';
 import chalk from 'gulp/node_modules/chalk';
 
 /**
- * This is the gulp cli logging mechanism extracted from the [source](
- * https://github.com/gulpjs/gulp/blob/master/bin/gulp.js#L173)
+ * This is the gulp cli logging mechanism extracted and modified
+ * from the [source](https://github.com/gulpjs/gulp/blob/master/bin/gulp.js#L173)
  */
+
+// Format orchestrator errors
+function formatError(e) {
+  if (!e.err) {
+    return e.message;
+  }
+
+  // PluginError
+  if (typeof e.err.showStack === 'boolean') {
+    return e.err.toString();
+  }
+
+  // Normal error
+  if (e.err.stack) {
+    return e.err.stack;
+  }
+
+  // Unknown (string, number, etc.)
+  return new Error(String(e.err)).stack;
+}
 
 // Wire up logging events
 function logEvents(gulpInst) {
 
   // Total hack due to poor error management in orchestrator
   gulpInst.on('err', function() {
-    failed = true;
+    // failed = true;
   });
 
   gulpInst.on('task_start', function(e) {
