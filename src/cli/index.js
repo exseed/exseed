@@ -94,7 +94,7 @@ program
   .usage('[options]')
   .option(
     '-e, --env <env>',
-    'specify environment (development|test|production)',
+    'specify NODE_ENV (development|test|production)',
     'development')
   .option(
     '-w, --watch',
