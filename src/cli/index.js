@@ -14,87 +14,11 @@ import gulpif from 'gulp-if';
 import notify from 'gulp-notify';
 import nodemon from 'gulp-nodemon';
 
-/**
- * Specify gulp tasks
- */
-
 // since we are calling gulp tasks from node scripts
 // instead of `gulp` command, we use the logging
 // function extracted from gulp's source code
 // to keep logs working properly
 gulpLogEvents(gulp);
-
-// watching source files
-gulp.task('watch', () => {
-  if (program.watch) {
-    return gulp
-      .watch('./src/**/*.js', ['build']);
-  }
-});
-
-// build source files
-gulp.task('build', () => {
-  return gulp
-    .src('./src/**/*.js')
-    .pipe(gulpif(program.watch, changed('./build/debug')))
-    .pipe(gulpif(env.d, sourcemaps.init()))
-      .pipe(babel({
-        presets: [
-          'es2015',
-          'stage-0',
-          'stage-1',
-        ],
-      }))
-      .on('error', notify.onError({
-        title: 'babel fail',
-        message: '<%= error.message %>',
-      }))
-    .pipe(gulpif(env.d, sourcemaps.write({
-      includeContent: false,
-      sourceRoot: (file) => {
-        return path.join(process.cwd(), 'src');
-      },
-    })))
-    .pipe(gulp.dest('./build/debug'));
-});
-
-gulp.task('nodemon', (cb) => {
-  if (env.d) {
-    let started = false;
-
-    return nodemon({
-      script: 'build/debug/app.js',
-      ext: 'js',
-      env: {
-        NODE_ENV: program.env,
-      },
-      ignore: [
-        'gulpfile.js',
-        'node_modules/**/*',
-        'src/**/*',
-        'build/debug/public/js/*/bundle.js',
-        'build/debug/public/js/common.js',
-        'build/release/**/*',
-        'build/test/**/*',
-      ],
-    })
-    .on('start', () => {
-      if (!started) {
-        cb();
-        started = true;
-      }
-    })
-    .on('restart', () => {
-    });
-  } else {
-    cb();
-  }
-});
-
-// run gulp tasks
-gulp.task('default', () => {
-  gulp.start('build', 'nodemon', 'watch');
-});
 
 /**
  * Definition of commands
@@ -112,11 +36,92 @@ program
     'watching the changes of files',
     false);
 
-const env = {
-  d: program.env === 'development',
-  t: program.env === 'test',
-  p: program.env === 'production',
-};
+program
+  .command('serve')
+  .alias('s')
+  .description('launch server')
+  .action(() => {
+    const env = {
+      d: program.env === 'development',
+      t: program.env === 'test',
+      p: program.env === 'production',
+    };
+
+    const dest = (
+      env.d? 'debug':
+      env.t? 'test':
+             'release');
+
+    /**
+     * Specify gulp tasks
+     */
+
+    // watching source files
+    gulp.task('watch', () => {
+      if (program.watch) {
+        return gulp
+          .watch('./src/**/*.js', ['build']);
+      }
+    });
+
+    // build source files
+    gulp.task('build', () => {
+      return gulp
+        .src('./src/**/*.js')
+        .pipe(gulpif(program.watch, changed('./build/' + dest)))
+        .pipe(gulpif(env.d, sourcemaps.init()))
+          .pipe(babel({
+            presets: [
+              'es2015',
+              'stage-0',
+              'stage-1',
+            ],
+          }))
+          .on('error', notify.onError({
+            title: 'babel fail',
+            message: '<%= error.message %>',
+          }))
+        .pipe(gulpif(env.d, sourcemaps.write({
+          includeContent: false,
+          sourceRoot: (file) => {
+            return path.join(process.cwd(), 'src');
+          },
+        })))
+        .pipe(gulp.dest('./build/' + dest));
+    });
+
+    gulp.task('nodemon', (cb) => {
+      let started = false;
+
+      return nodemon({
+        script: `build/${dest}/app.js`,
+        ext: 'js',
+        env: {
+          NODE_ENV: program.env,
+        },
+        ignore: [
+          'gulpfile.js',
+          'node_modules/**/*',
+          'src/**/*',
+          'build/debug/public/js/*/bundle.js',
+          'build/debug/public/js/common.js',
+          'build/release/**/*',
+          'build/test/**/*',
+        ],
+      })
+      .on('start', () => {
+        if (!started) {
+          cb();
+          started = true;
+        }
+      })
+      .on('restart', () => {
+      });
+    });
+
+    // run gulp tasks
+    gulp.start('build', 'nodemon', 'watch');
+  });
 
 // to customize command name in help information
 // ref: https://github.com/tj/commander.js/issues/466
@@ -124,5 +129,5 @@ process.argv[1] = 'sd';
 program.parse(process.argv);
 
 if (!program.args.length) {
-  gulp.start('default');
+  program.help();
 }
