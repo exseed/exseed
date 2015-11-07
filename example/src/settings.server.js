@@ -24,8 +24,30 @@ export default {
       },
     },
     test: {
+      adapters: {
+        sqlite3: waterlineSqlite3,
+      },
+      connections: {
+        default: {
+          adapter: 'sqlite3',
+          type: 'disk',
+          filename: './db.test.sqlite',
+          debug: false,
+        },
+      },
     },
     production: {
+      adapters: {
+        sqlite3: waterlineSqlite3,
+      },
+      connections: {
+        default: {
+          adapter: 'sqlite3',
+          type: 'disk',
+          filename: './db.test.sqlite',
+          debug: false,
+        },
+      },
     },
   },
 };

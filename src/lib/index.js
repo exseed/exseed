@@ -65,6 +65,23 @@ export function registerApp(appName, AppClass) {
  * @param {object} schema - A waterline schema definition
  */
 export function registerModel(schema) {
+  // add default value for the schema
+  assign(schema, {
+    connection: 'default',
+
+    /*
+     * migrate: 'alter'
+     *   adds and/or removes columns on changes to the schema
+     * migrate: 'drop'
+     *   drops all your tables and then re-creates them. All data is deleted.
+     * migrate: 'safe'
+     *   doesn't do anything on sails lift- for use in production.
+     */
+    migrate: schema.migrate || (
+      env.development? 'alter':
+      env.test? 'drop':
+      'safe'),
+  });
   let collections = Waterline.Collection.extend(schema);
   _waterline.loadCollection(collections);
 }

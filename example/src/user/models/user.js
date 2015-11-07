@@ -1,6 +1,5 @@
 export default {
   identity: 'user',
-  connection: 'default',
   attributes: {
     email: {
       type: 'string',
