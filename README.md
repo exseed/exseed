@@ -1,5 +1,7 @@
 # Exseed
 
+[![Build Status](https://travis-ci.org/exseed/exseed.svg?branch=master)](https://travis-ci.org/exseed/exseed)
+
 A highly extensible nodejs framework
 
 ## Features
