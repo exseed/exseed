@@ -44,7 +44,7 @@ export default {
         default: {
           adapter: 'sqlite3',
           type: 'disk',
-          filename: './db.test.sqlite',
+          filename: './db.production.sqlite',
           debug: false,
         },
       },
