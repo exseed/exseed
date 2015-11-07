@@ -1,0 +1,7 @@
+gulpfile.js
+.jscsrc
+.gitignore
+.editorconfig
+/src
+/example
+/docs
