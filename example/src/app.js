@@ -1,3 +1,4 @@
+import 'source-map-support/register';
 import * as exseed from 'exseed';
 import settings from './settings.server';
 

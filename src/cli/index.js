@@ -1,6 +1,7 @@
 #! /usr/bin/env node
 
-import {exec} from 'child_process';
+import { exec } from 'child_process';
+import path from 'path';
 import program from 'commander';
 import pkg from '../package.json';
 
@@ -8,6 +9,9 @@ import gulp from 'gulp';
 import gulpLogEvents from './gulpLogEvents';
 import changed from 'gulp-changed';
 import babel from 'gulp-babel';
+import sourcemaps from 'gulp-sourcemaps';
+import gulpif from 'gulp-if';
+import notify from 'gulp-notify';
 import nodemon from 'gulp-nodemon';
 
 /**
@@ -20,11 +24,6 @@ import nodemon from 'gulp-nodemon';
 // to keep logs working properly
 gulpLogEvents(gulp);
 
-const errorHandler = (err) => {
-  console.log(err.toString());
-  this.emit('end');
-};
-
 // watching source files
 gulp.task('watch', () => {
   return gulp
@@ -36,14 +35,24 @@ gulp.task('build', () => {
   return gulp
     .src('./src/**/*.js')
     .pipe(changed('./build/debug'))
-    .pipe(babel({
-      presets: [
-        'es2015',
-        'stage-0',
-        'stage-1',
-      ],
-    }))
-    .on('error', errorHandler)
+    .pipe(gulpif(env.d, sourcemaps.init()))
+      .pipe(babel({
+        presets: [
+          'es2015',
+          'stage-0',
+          'stage-1',
+        ],
+      }))
+      .on('error', notify.onError({
+        title: 'babel fail',
+        message: '<%= error.message %>',
+      }))
+    .pipe(gulpif(env.d, sourcemaps.write({
+      includeContent: false,
+      sourceRoot: (file) => {
+        return path.join(process.cwd(), 'src');
+      },
+    })))
     .pipe(gulp.dest('./build/debug'));
 });
 
