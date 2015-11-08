@@ -95,6 +95,7 @@ program
 
       return nodemon({
         script: `build/${dest}/app.js`,
+        watch: [`build/${dest}/**/*.js`],
         ext: 'js',
         env: {
           NODE_ENV: program.env,
@@ -105,8 +106,10 @@ program
           'src/**/*',
           'build/debug/public/js/*/bundle.js',
           'build/debug/public/js/common.js',
-          'build/release/**/*',
-          'build/test/**/*',
+          'build/release/public/js/*/bundle.js',
+          'build/release/public/js/common.js',
+          'build/test/public/js/*/bundle.js',
+          'build/test/public/js/common.js',
         ],
       })
       .on('start', () => {
