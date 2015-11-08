@@ -1,6 +1,6 @@
 # Exseed
 
-[![Build Status](https://travis-ci.org/exseed/exseed.svg?branch=master)](https://travis-ci.org/exseed/exseed)
+[![Build Status](https://travis-ci.org/exseed/exseed.svg?branch=master)](https://travis-ci.org/exseed/exseed) [![npm version](https://badge.fury.io/js/exseed.svg)](https://badge.fury.io/js/exseed)
 
 A highly extensible nodejs framework
 
