@@ -26,7 +26,12 @@ class BasicApp extends App {
   }
 
   onError(err, req, res) {
-    console.log('error handling of app 2');
+    switch (err.name) {
+      case 'PageNotFound': {
+        res.send('404');
+        break;
+      }
+    }
   }
 };
 

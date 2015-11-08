@@ -39,7 +39,6 @@ class UserApp extends App {
   }
 
   onError(err, req, res) {
-    console.log('error handling of app 2');
   }
 };
 

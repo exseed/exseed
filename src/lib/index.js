@@ -46,6 +46,25 @@ export class App {
 
   init(models) {
   }
+
+  onError(err, req, res) {
+  }
+}
+
+export class Err {
+  constructor(message='Unnamed error', status=500) {
+    this.name = this.constructor.name;
+    this.message = message;
+    Error.captureStackTrace(this, this.constructor);
+  }
+}
+
+export class PageNotFound extends Err {
+  constructor(
+    msg='The url you are requesting does not exist',
+    status=404) {
+    super(msg, status);
+  }
 }
 
 /**
@@ -130,6 +149,23 @@ export function run(cb) {
     let exseedApp = _appMap[appName];
     exseedApp.routing(exseedApp.expressApp);
   }
+
+  // 404
+  _rootExpressApp.use((req, res, next) => {
+    next(new PageNotFound());
+  });
+
+  // error handling
+  _rootExpressApp.use((err, req, res, next) => {
+    if (err) {
+      for (let appName in _appMap) {
+        let exseedApp = _appMap[appName];
+        exseedApp.onError(err, req, res);
+      }
+    }
+  });
+
+  // launch server
   const port = _appSettings.server.port[ENV];
   _rootExpressApp.httpServer = http
     .createServer(_rootExpressApp)
