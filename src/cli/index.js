@@ -34,26 +34,27 @@ program
   .description('launch server')
   .option(
     '-d, --development',
-    'specify NODE_ENV=development',
-    true)
+    'specify NODE_ENV=development')
   .option(
     '-t, --test',
-    'specify NODE_ENV=test',
-    false)
+    'specify NODE_ENV=test')
   .option(
     '-p, --production',
-    'specify NODE_ENV=production',
-    false)
+    'specify NODE_ENV=production')
   .option(
     '-w, --watch',
-    'watching the changes of files',
-    false)
+    'watching the changes of files')
   .action((options) => {
     const env = {
       d: options.development,
       t: options.test,
       p: options.production,
     };
+
+    // give default environment
+    if (!env.d && !env.t && !env.p) {
+      env.d = true;
+    }
 
     // check correctness
     if (!((env.d && !env.t && !env.p) ||
