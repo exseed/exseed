@@ -1,12 +1,12 @@
 #! /usr/bin/env node
 
-import { exec } from 'child_process';
 import path from 'path';
 import program from 'commander';
 import pkg from '../package.json';
 
 import gulp from 'gulp';
 import gulpLogEvents from './gulpLogEvents';
+import gutil from 'gulp-util';
 import changed from 'gulp-changed';
 import babel from 'gulp-babel';
 import sourcemaps from 'gulp-sourcemaps';
@@ -25,27 +25,49 @@ gulpLogEvents(gulp);
  */
 
 program
-  .version(pkg.version)
-  .usage('[options]')
-  .option(
-    '-e, --env <env>',
-    'specify NODE_ENV (development|test|production)',
-    'development')
-  .option(
-    '-w, --watch',
-    'watching the changes of files',
-    false);
+  .version(pkg.version);
 
 program
   .command('serve')
   .alias('s')
+  .usage('[-d|-t|-p] [-w]')
   .description('launch server')
-  .action(() => {
+  .option(
+    '-d, --development',
+    'specify NODE_ENV=development',
+    true)
+  .option(
+    '-t, --test',
+    'specify NODE_ENV=test',
+    false)
+  .option(
+    '-p, --production',
+    'specify NODE_ENV=production',
+    false)
+  .option(
+    '-w, --watch',
+    'watching the changes of files',
+    false)
+  .action((options) => {
     const env = {
-      d: program.env === 'development',
-      t: program.env === 'test',
-      p: program.env === 'production',
+      d: options.development,
+      t: options.test,
+      p: options.production,
     };
+
+    // check correctness
+    if (!((env.d && !env.t && !env.p) ||
+          (!env.d && env.t && !env.p) ||
+          (!env.d && !env.t && env.p))) {
+      gutil.log(gutil.colors.red(
+        '-d, -t and -p switches cannot be used in parallel'));
+      return;
+    }
+
+    const NODE_ENV = (
+      env.d? 'development':
+      env.t? 'test':
+             'production');
 
     const dest = (
       env.d? 'debug':
@@ -58,7 +80,7 @@ program
 
     // watching source files
     gulp.task('watch', () => {
-      if (program.watch) {
+      if (options.watch) {
         return gulp
           .watch('./src/**/*.js', ['build']);
       }
@@ -68,7 +90,7 @@ program
     gulp.task('build', () => {
       return gulp
         .src('./src/**/*.js')
-        .pipe(gulpif(program.watch, changed('./build/' + dest)))
+        .pipe(gulpif(options.watch, changed('./build/' + dest)))
         .pipe(gulpif(env.d, sourcemaps.init()))
           .pipe(babel({
             presets: [
@@ -98,7 +120,7 @@ program
         watch: [`build/${dest}/**/*.js`],
         ext: 'js',
         env: {
-          NODE_ENV: program.env,
+          NODE_ENV: NODE_ENV,
         },
         ignore: [
           'gulpfile.js',
