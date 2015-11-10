@@ -82,15 +82,30 @@ program
     // watching source files
     gulp.task('watch', () => {
       if (options.watch) {
-        return gulp
-          .watch('./src/**/*.js', ['build']);
+        gulp
+          .watch([
+            // refer to `build` task's src
+            './src/**/*.js',
+            '!src/*/public/**/*.js',
+            '!src/*/flux/**/*.js',
+          ], ['build']);
+        gulp
+          .watch([
+            // refer to `copy` task's src
+            'src/*/public/**/*',
+            'src/*/flux/**/*',
+          ], ['copy']);
       }
     });
 
     // build source files
     gulp.task('build', () => {
       return gulp
-        .src('./src/**/*.js')
+        .src([
+          './src/**/*.js',
+          '!src/*/public/**/*.js',
+          '!src/*/flux/**/*.js',
+        ])
         .pipe(gulpif(options.watch, changed('./build/' + dest)))
         .pipe(gulpif(env.d, sourcemaps.init()))
           .pipe(babel({
@@ -98,6 +113,7 @@ program
               'es2015',
               'stage-0',
               'stage-1',
+              'react',
             ],
           }))
           .on('error', notify.onError({
@@ -113,6 +129,16 @@ program
         .pipe(gulp.dest('./build/' + dest));
     });
 
+    gulp.task('copy', function() {
+      return gulp
+        .src([
+          'src/*/public/**/*',
+          'src/*/flux/**/*',
+        ])
+        .pipe(gulpif(options.watch, changed('./build/' + dest)))
+        .pipe(gulp.dest('./build/' + dest));
+    });
+
     gulp.task('nodemon', (cb) => {
       let started = false;
 
@@ -122,6 +148,7 @@ program
         ext: 'js',
         env: {
           NODE_ENV: NODE_ENV,
+          EXSEED_WATCH: options.watch,
         },
         ignore: [
           'gulpfile.js',
@@ -129,6 +156,7 @@ program
           'src/**/*',
           'build/debug/public/js/*/bundle.js',
           'build/debug/public/js/common.js',
+          'build/debug/*/flux/**/*',
           'build/release/public/js/*/bundle.js',
           'build/release/public/js/common.js',
           'build/test/public/js/*/bundle.js',
@@ -146,7 +174,7 @@ program
     });
 
     // run gulp tasks
-    gulp.start('build', 'nodemon', 'watch');
+    gulp.start('build', 'copy', 'nodemon', 'watch');
   });
 
 // to customize command name in help information

@@ -1,7 +1,14 @@
+import path from 'path';
 import http from 'http';
 import express from 'express';
 import Waterline from 'waterline';
 import assign from 'object-assign';
+
+// dependencies for livereloading react
+import webpack from 'webpack';
+import config from './webpack.config.dev';
+import webpackDevMiddleware from 'webpack-dev-middleware';
+import webpackHotMiddleware from 'webpack-hot-middleware';
 
 // registered app instances
 let _appMap = {};
@@ -24,6 +31,18 @@ export const env = {
   test: ENV === 'test',
   production: ENV === 'production',
 };
+
+if (process.env.EXSEED_WATCH) {
+  config.entry.push(path.join(process.env.PWD, 'build/debug/basic/flux/boot'));
+  config.output.path = path.join(process.env.PWD, 'build/debug');
+
+  let compiler = webpack(config);
+  _rootExpressApp.use(webpackDevMiddleware(compiler, {
+    noInfo: true,
+    publicPath: config.output.publicPath,
+  }));
+  _rootExpressApp.use(webpackHotMiddleware(compiler));
+}
 
 /**
  * App class
