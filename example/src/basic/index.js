@@ -23,6 +23,22 @@ class BasicApp extends App {
     app.get('/about', (req, res) => {
       res.send('about');
     });
+
+    app.get('/react', (req, res) => {
+      res.send(`
+        <!doctype html>
+        <html>
+          <head>
+            <title>React Transform Boilerplate</title>
+          </head>
+          <body>
+            <div id='root'>
+            </div>
+            <script src="/static/bundle.js"></script>
+          </body>
+        </html>
+      `);
+    });
   }
 
   onError(err, req, res) {

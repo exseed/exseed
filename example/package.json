@@ -18,6 +18,8 @@
     "source-map-support": "^0.3.3"
   },
   "dependencies": {
+    "react": "^0.14.2",
+    "react-dom": "^0.14.2",
     "waterline-sqlite3": "^0.12.4"
   }
 }
