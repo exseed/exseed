@@ -8,9 +8,7 @@ sftp-configuration.json
 /build
 
 # Databases
-db.development.sqlite
-db.test.sqlite
-db.production.sqlite
+/.db
 
 # Secret
 github

@@ -1,4 +1,6 @@
-import waterlineSqlite3 from 'waterline-sqlite3';
+import path from 'path';
+import sailsMemory from 'sails-memory';
+import sailsDisk from 'sails-disk';
 
 export default {
   server: {
@@ -11,41 +13,33 @@ export default {
   db: {
     development: {
       adapters: {
-        sqlite3: waterlineSqlite3,
+        disk: sailsDisk,
       },
       connections: {
         default: {
-          adapter: 'sqlite3',
-          type: 'disk',
-          // base on cwd (current working directory)
-          filename: './db.development.sqlite',
-          debug: false, // show SQL queries or not
+          adapter: 'disk',
+          filePath: path.join(__dirname, '../../.db/development.'),
         },
       },
     },
     test: {
       adapters: {
-        sqlite3: waterlineSqlite3,
+        memory: sailsMemory,
       },
       connections: {
         default: {
-          adapter: 'sqlite3',
-          type: 'disk',
-          filename: './db.test.sqlite',
-          debug: false,
+          adapter: 'memory',
         },
       },
     },
     production: {
       adapters: {
-        sqlite3: waterlineSqlite3,
+        disk: sailsDisk,
       },
       connections: {
         default: {
-          adapter: 'sqlite3',
-          type: 'disk',
-          filename: './db.production.sqlite',
-          debug: false,
+          adapter: 'disk',
+          filePath: path.join(__dirname, '../../.db/production.'),
         },
       },
     },
