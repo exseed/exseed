@@ -119,6 +119,29 @@ const registerTasks = (options) => {
       .pipe(gulp.dest('./build/' + dest));
   });
 
+  gulp.task('exec', ['build', 'copy'], (cb) => {
+    const exec = require('child_process').exec;
+    const child = exec('node build/debug/app.js', {
+      env: {
+        NODE_ENV: NODE_ENV,
+        EXSEED_INIT: options.init,
+      },
+    });
+
+    // show outputs in realtime
+    child.stdout.on('data', (data) => {
+      console.log(data);
+    });
+
+    child.stderr.on('data', (data) => {
+      console.log(data);
+    });
+
+    child.on('close', (code) => {
+      cb();
+    });
+  });
+
   gulp.task('nodemon', (cb) => {
     let started = false;
 
@@ -129,6 +152,7 @@ const registerTasks = (options) => {
       env: {
         NODE_ENV: NODE_ENV,
         EXSEED_WATCH: options.watch,
+        EXSEED_INIT: options.init,
       },
       ignore: [
         'gulpfile.js',
@@ -176,6 +200,20 @@ program.Command.prototype.addEnvOptions = function() {
 // specify cli version number
 program
   .version(pkg.version);
+
+// specify command `initialize`
+program
+  .command('initialize')
+  .alias('init')
+  .usage('[-d|-t|-p]')
+  .description('initialize installed apps')
+  .addEnvOptions()
+  .action((options) => {
+    options.init = true;
+    registerTasks(options);
+    // run gulp tasks
+    gulp.start('build', 'copy', 'exec');
+  });
 
 // specify command `serve`
 program

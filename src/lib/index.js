@@ -125,18 +125,22 @@ export function registerModel(schema) {
 }
 
 /**
- * @callback initCallback
+ * @callback runCallback
  * @param {object} err - An error object
  * @param {object} models - All orm models
+ * @param {object} port - The listening port
  */
 
 /**
- * Initialize waterline orm and iterate through
- * `init` member function of all registered exseed apps
+ * 1. Initialize waterline orm
+ * 2. Iterate through `init` member function of all registered exseed apps
+ *    and then exit when `EXSEED_INIT` is set
+ * 3. Iterate through `routing` member function of all registered exseed apps
+ *    and then launch the server when `EXSEED_INIT` is not set
  * @param {object} customSettings - The global settings
- * @param {initCallback} cb - The callback after initialization
+ * @param {runCallback} cb - The callback after serving
  */
-export function init(customSettings, cb) {
+export function run(customSettings, cb) {
   assign(_appSettings, customSettings);
 
   // initialize ORM
@@ -144,51 +148,43 @@ export function init(customSettings, cb) {
     if (err) {
       return cb(err);
     }
-    for (let appName in _appMap) {
-      let exseedApp = _appMap[appName];
-      exseedApp.init(ontology.collections);
-    }
-    cb(null, ontology.collections);
-  });
-}
 
-/**
- * @callback runCallback
- * @param {object} err - An error object
- * @param {object} port - The listening port
- */
-
-/**
- * Iterate through `routing` member function of all registered exseed apps
- * and launch the server
- * @param {runCallback} cb - The callback after serving
- */
-export function run(cb) {
-  for (let appName in _appMap) {
-    let exseedApp = _appMap[appName];
-    exseedApp.routing(exseedApp.expressApp);
-  }
-
-  // 404
-  _rootExpressApp.use((req, res, next) => {
-    next(new PageNotFound());
-  });
-
-  // error handling
-  _rootExpressApp.use((err, req, res, next) => {
-    if (err) {
+    // initialize exseed app
+    if (process.env.EXSEED_INIT === 'true') {
       for (let appName in _appMap) {
         let exseedApp = _appMap[appName];
-        exseedApp.onError(err, req, res);
+        exseedApp.init(ontology.collections);
       }
+      return;
     }
-  });
 
-  // launch server
-  const port = _appSettings.server.port[ENV];
-  _rootExpressApp.httpServer = http
-    .createServer(_rootExpressApp)
-    .listen(port, cb.bind(this, _rootExpressApp, port));
+    // setup exseed app's routing rules
+    for (let appName in _appMap) {
+      let exseedApp = _appMap[appName];
+      exseedApp.routing(exseedApp.expressApp);
+    }
+
+    // 404
+    _rootExpressApp.use((req, res, next) => {
+      next(new PageNotFound());
+    });
+
+    // error handling
+    _rootExpressApp.use((err, req, res, next) => {
+      if (err) {
+        for (let appName in _appMap) {
+          let exseedApp = _appMap[appName];
+          exseedApp.onError(err, req, res);
+        }
+      }
+    });
+
+    // launch server
+    const port = _appSettings.server.port[ENV];
+    _rootExpressApp.httpServer = http
+      .createServer(_rootExpressApp)
+      .listen(port, cb.bind(this, null, ontology.collections, port));
+  });
 }
 
 /**
