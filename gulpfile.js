@@ -44,6 +44,7 @@ gulp.task('build', function() {
           'es2015',
           'stage-0',
           'stage-1',
+          'react',
         ],
       }))
       .on('error', notify.onError({

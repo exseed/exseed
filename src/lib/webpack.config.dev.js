@@ -43,12 +43,10 @@ var babelSettings = {
 
 module.exports = {
   devtool: 'eval',
-  entry: [
-    'webpack-hot-middleware/client',
-  ],
+  entry: {},
   output: {
-    filename: 'bundle.js',
-    publicPath: '/static/',
+    filename: 'js/[name]/bundle.js',
+    publicPath: '/',
   },
   plugins: [
     new webpack.HotModuleReplacementPlugin(),
@@ -56,7 +54,7 @@ module.exports = {
   ],
   module: {
     loaders: [{
-      test: /\.js$/,
+      test: /\.jsx?$/,
       exclude: /node_modules/,
       loaders: ['babel?' + JSON.stringify(babelSettings)],
     },],

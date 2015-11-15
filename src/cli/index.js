@@ -67,7 +67,6 @@ const registerTasks = (options) => {
           // refer to `build` task's src
           './src/**/*.js',
           '!src/*/public/**/*.js',
-          '!src/*/flux/**/*.js',
         ], ['build']);
       gulp
         .watch([
@@ -84,7 +83,6 @@ const registerTasks = (options) => {
       .src([
         './src/**/*.js',
         '!src/*/public/**/*.js',
-        '!src/*/flux/**/*.js',
       ])
       .pipe(gulpif(options.watch, changed('./build/' + dest)))
       .pipe(gulpif(env.d, sourcemaps.init()))
@@ -113,7 +111,6 @@ const registerTasks = (options) => {
     return gulp
       .src([
         'src/*/public/**/*',
-        'src/*/flux/**/*',
       ])
       .pipe(gulpif(options.watch, changed('./build/' + dest)))
       .pipe(gulp.dest('./build/' + dest));

@@ -1,8 +1,11 @@
 import path from 'path';
+import fs from 'fs';
 import http from 'http';
 import express from 'express';
 import Waterline from 'waterline';
 import assign from 'object-assign';
+import React from 'react';
+import ReactDOMServer from 'react-dom/server';
 
 // dependencies for livereloading react
 import webpack from 'webpack';
@@ -32,17 +35,10 @@ export const env = {
   production: ENV === 'production',
 };
 
-if (process.env.EXSEED_WATCH) {
-  config.entry.push(path.join(process.env.PWD, 'build/debug/basic/flux/boot'));
-  config.output.path = path.join(process.env.PWD, 'build/debug');
-
-  let compiler = webpack(config);
-  _rootExpressApp.use(webpackDevMiddleware(compiler, {
-    noInfo: true,
-    publicPath: config.output.publicPath,
-  }));
-  _rootExpressApp.use(webpackHotMiddleware(compiler));
-}
+const _dest = (
+  env.development? 'debug':
+  env.test?        'test':
+                   'release');
 
 /**
  * App class
@@ -74,6 +70,7 @@ export class Err {
   constructor(message='Unnamed error', status=500) {
     this.name = this.constructor.name;
     this.message = message;
+    this.status = status;
     Error.captureStackTrace(this, this.constructor);
   }
 }
@@ -143,6 +140,33 @@ export function registerModel(schema) {
 export function run(customSettings, cb) {
   assign(_appSettings, customSettings);
 
+  if (process.env.EXSEED_WATCH === 'true') {
+    console.log('using livereload');
+    // webpack compilation
+    let appArray = [];
+    for (let appName in _appMap) {
+      const srcPath = path.join(process.env.PWD, `src/${appName}/flux/boot.js`);
+      if (fs.existsSync(srcPath)) {
+        appArray.push(appName);
+        config.entry[appName] = [
+          srcPath,
+          'webpack-hot-middleware/client',
+        ];
+      }
+    }
+    config.output.path = path.join(process.env.PWD, `build/${_dest}/public/`);
+    config.plugins.push(
+      new webpack.optimize.CommonsChunkPlugin('js/common.js', appArray),
+    );
+
+    let compiler = webpack(config);
+    _rootExpressApp.use(webpackDevMiddleware(compiler, {
+      noInfo: true,
+      publicPath: config.output.publicPath,
+    }));
+    _rootExpressApp.use(webpackHotMiddleware(compiler));
+  }
+
   // initialize ORM
   _waterline.initialize(_appSettings.db[ENV], (err, ontology) => {
     if (err) {
@@ -162,6 +186,33 @@ export function run(customSettings, cb) {
     for (let appName in _appMap) {
       let exseedApp = _appMap[appName];
       exseedApp.routing(exseedApp.expressApp);
+    }
+
+    // render full page view
+    for (let appName in _appMap) {
+      let app = _appMap[appName].expressApp;
+      const routesPath = path.join(
+        process.env.PWD, 'build', _dest, appName, 'routes.js');
+      if (fs.existsSync(routesPath)) {
+        const App = require(routesPath).default;
+        app.get('/*', (req, res, next) => {
+          try {
+            const html = ReactDOMServer.renderToString(
+              <App path={req.path} />);
+            res.send(html);
+          } catch (err) {
+            if (err.message !== 'React-router-component: ' +
+                                'No route matched! ' +
+                                'Did you define a NotFound route?') {
+              console.log('exception');
+              next(err);
+            } else {
+              // no routes matched in currently iterated app
+              next();
+            }
+          }
+        });
+      }
     }
 
     // 404
