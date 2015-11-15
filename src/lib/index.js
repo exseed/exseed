@@ -213,7 +213,9 @@ export function run(customSettings, cb) {
                 head.link.toString() +
               '</head>' +
               '<body>' +
-              html +
+                '<div id="exseed_root">' +
+                  html +
+                '</div>' +
               '</body>'
             );
           } catch (err) {
