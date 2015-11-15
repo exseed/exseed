@@ -1,5 +1,6 @@
 import React from 'react';
 import BaseLayout from './BaseLayout';
+import Navigator from '../components/Navigator';
 
 // jscs:disable
 /**
@@ -29,6 +30,7 @@ export default class AppLayout extends React.Component {
         title="Exseed"
         scripts={scripts}
         styles={styles} >
+        <Navigator />
         {this.props.children}
       </BaseLayout>
     );
