@@ -1,4 +1,5 @@
 import React from 'react';
+import Helmet from 'react-helmet';
 
 export default class BaseLayout extends React.Component {
   render() {
@@ -17,18 +18,20 @@ export default class BaseLayout extends React.Component {
       return <link key={idx} rel="stylesheet" href={src}/>;
     });
 
-    return <html>
-      <head>
-        <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>{this.props.title}</title>
-      </head>
-      <body>
-        {styles}
-        {this.props.children}
-        {scripts}
-      </body>
-    </html>;
+    return <div>
+      <Helmet
+        title={this.props.title}
+        meta={[
+          {charSet: 'utf-8'},
+          {
+            name: 'viewport',
+            content: 'width=device-width, initial-scale=1.0',
+          },
+        ]} />
+      {styles}
+      {this.props.children}
+      {scripts}
+    </div>;
   }
 };
 

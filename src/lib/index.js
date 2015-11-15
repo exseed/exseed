@@ -197,14 +197,29 @@ export function run(customSettings, cb) {
         const App = require(routesPath).default;
         app.get('/*', (req, res, next) => {
           try {
+            const Helmet = require(
+              path.join(process.env.PWD, 'node_modules/react-helmet'));
+            // the order of generating `html` and `head` cannot be exchanged
+            // it's fucking weird...
             const html = ReactDOMServer.renderToString(
               <App path={req.path} />);
-            res.send(html);
+            const head = Helmet.rewind();
+
+            res.send(
+              '<!DOCTYPE html>' +
+              '<head>' +
+                `<title>${head.title.toString()}</title>` +
+                head.meta.toString() +
+                head.link.toString() +
+              '</head>' +
+              '<body>' +
+              html +
+              '</body>'
+            );
           } catch (err) {
             if (err.message !== 'React-router-component: ' +
                                 'No route matched! ' +
                                 'Did you define a NotFound route?') {
-              console.log('exception');
               next(err);
             } else {
               // no routes matched in currently iterated app
