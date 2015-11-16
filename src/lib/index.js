@@ -50,12 +50,12 @@ export class App {
    * and mount it onto the top level express app
    * @constructs App
    */
-  constructor() {
+  constructor(app) {
     /**
      * The express app
      * @member App#expressApp
      */
-    this.expressApp = express();
+    this.expressApp = app;
     _rootExpressApp.use('/', this.expressApp);
   }
 
@@ -90,7 +90,8 @@ export class PageNotFound extends Err {
  *   - An exseed app class declaration extends from App
  */
 export function registerApp(appName, AppClass) {
-  const appInstance = new AppClass();
+  let newExpressApp = express();
+  const appInstance = new AppClass(newExpressApp);
   _appMap[appName] = appInstance;
   return appInstance;
 }
