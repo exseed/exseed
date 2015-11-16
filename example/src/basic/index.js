@@ -1,4 +1,6 @@
 import { App } from 'exseed';
+import path from 'path';
+import favicon from 'serve-favicon';
 import morgan from 'morgan';
 
 class BasicApp extends App {
@@ -8,6 +10,7 @@ class BasicApp extends App {
    */
   constructor(app) {
     super(app);
+    app.use(favicon(path.join(__dirname, 'public/favicon.ico')));
     morgan.token('colorStatus', (req, res) => {
       const status = res.statusCode;
       let color = '';
