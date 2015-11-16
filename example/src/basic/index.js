@@ -3,6 +3,7 @@ import path from 'path';
 import favicon from 'serve-favicon';
 import morgan from 'morgan';
 import bodyParser from 'body-parser';
+import cookieParser from 'cookie-parser';
 
 class BasicApp extends App {
   /**
@@ -52,6 +53,9 @@ class BasicApp extends App {
 
     // parse application/json
     app.use(bodyParser.json());
+
+    // cookie parser
+    app.use(cookieParser());
   }
 
   /**
@@ -63,6 +67,20 @@ class BasicApp extends App {
   routing(app, router, models) {
     app.post('/bodyparser', (req, res) => {
       res.json(req.body);
+    });
+
+    app.get('/cookie_example/set', (req, res) => {
+      res.cookie('cookie_example', 'this is some cookie');
+      res.send(
+        '`cookie_example` was set, and here is your cookie:<br>' +
+        JSON.stringify(req.cookies));
+    });
+
+    app.get('/cookie_example/unset', (req, res) => {
+      res.clearCookie('cookie_example');
+      res.send(
+        '`cookie_example` was unset, and here is your cookie:<br>' +
+        JSON.stringify(req.cookies));
     });
 
     app.get('/error', (req, res) => {
