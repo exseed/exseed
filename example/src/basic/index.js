@@ -2,6 +2,7 @@ import { App } from 'exseed';
 import path from 'path';
 import favicon from 'serve-favicon';
 import morgan from 'morgan';
+import bodyParser from 'body-parser';
 
 class BasicApp extends App {
   /**
@@ -45,6 +46,12 @@ class BasicApp extends App {
       '\x1b[0;36m' + ':response-time ms' +
       '\x1b[0m'
     ));
+
+    // parse application/x-www-form-urlencoded
+    app.use(bodyParser.urlencoded({ extended: false }));
+
+    // parse application/json
+    app.use(bodyParser.json());
   }
 
   /**
@@ -54,6 +61,10 @@ class BasicApp extends App {
    * @param {object} models - all models of the project
    */
   routing(app, router, models) {
+    app.post('/bodyparser', (req, res) => {
+      res.json(req.body);
+    });
+
     app.get('/error', (req, res) => {
       throw new Error('make error in purpose');
     });
