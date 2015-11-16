@@ -25,6 +25,11 @@ const _waterline = new Waterline();
 // the top level express app
 const _rootExpressApp = express();
 
+export let middlewares = {
+  // expose express's `static` method
+  static: express.static,
+};
+
 /**
  * Environment related variables
  */
@@ -91,6 +96,8 @@ export class PageNotFound extends Err {
  */
 export function registerApp(appName, AppClass) {
   let newExpressApp = express();
+  newExpressApp.use('/' + appName, express.static(
+    path.join(process.env.PWD, 'build', _dest, appName, 'public')));
   const appInstance = new AppClass(newExpressApp);
   _appMap[appName] = appInstance;
   return appInstance;

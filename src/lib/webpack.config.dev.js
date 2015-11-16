@@ -45,7 +45,7 @@ module.exports = {
   devtool: 'eval',
   entry: {},
   output: {
-    filename: 'js/[name]/bundle.js',
+    filename: '[name]/js/bundle.js',
     publicPath: '/',
   },
   plugins: [

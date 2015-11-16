@@ -18,11 +18,11 @@ if (process.env.BROWSER) {
 export default class AppLayout extends React.Component {
   render() {
     const scripts = [
-      '/js/basic/bundle.js',
+      '/basic/js/bundle.js',
     ];
 
     const styles = [
-      '/css/basic/bundle.css',
+      // '/basic/css/bundle.css',
     ];
 
     return (

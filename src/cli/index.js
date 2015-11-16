@@ -72,7 +72,6 @@ const registerTasks = (options) => {
         .watch([
           // refer to `copy` task's src
           'src/*/public/**/*',
-          'src/*/flux/**/*',
         ], ['copy']);
     }
   });
@@ -139,7 +138,7 @@ const registerTasks = (options) => {
     });
   });
 
-  gulp.task('nodemon', (cb) => {
+  gulp.task('nodemon', ['build', 'copy'], (cb) => {
     let started = false;
 
     return nodemon({
