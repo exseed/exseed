@@ -1,3 +1,5 @@
+import { models } from 'exseed';
+
 export default {
   identity: 'user',
   attributes: {
@@ -25,6 +27,21 @@ export default {
       delete obj.password;
       return obj;
     },
+  },
+
+  authenticate(user) {
+    return models.user
+      .findOne({
+        email: user.email,
+        password: user.password,
+      })
+      .then((user) => {
+        if (user === undefined) {
+          throw new Error('Authenticate fails');
+        } else {
+          return user;
+        }
+      });
   },
 
   // beforeCreate(values, next) {

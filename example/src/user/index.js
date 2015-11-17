@@ -87,6 +87,16 @@ class UserApp extends App {
   }
 
   routing(app, models) {
+    app.post('/api/user/login', (req, res) => {
+      models.user
+        .authenticate(req.body)
+        .then((user) => {
+          res.send(user);
+        })
+        .catch((e) => {
+          res.send(e.message);
+        });
+    });
     app.get('/api/user/:id', (req, res) => {
       // deep populate user to get
       // `user.role` and `user.role.permissions`
