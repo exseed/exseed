@@ -70,6 +70,9 @@ export class App {
   init(models) {
   }
 
+  routing(app, models) {
+  }
+
   onError(err, req, res) {
   }
 }
@@ -196,7 +199,7 @@ export function run(customSettings, cb) {
     // setup exseed app's routing rules
     for (let appName in _appMap) {
       let exseedApp = _appMap[appName];
-      exseedApp.routing(exseedApp.expressApp);
+      exseedApp.routing(exseedApp.expressApp, ontology.collections);
     }
 
     // render full page view

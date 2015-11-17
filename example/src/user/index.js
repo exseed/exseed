@@ -68,7 +68,26 @@ class UserApp extends App {
       });
   }
 
-  routing(app, router, models) {
+  routing(app, models) {
+    app.get('/api/user/:id', (req, res) => {
+      models.user
+        .findOne(req.params.id)
+        .then((role) => {
+          res.json(role);
+        });
+    });
+
+    app.get('/api/role/:name', (req, res) => {
+      models.role
+        .findOne({
+          name: req.params.name,
+        })
+        .populate('users')
+        .then((role) => {
+          res.json(role);
+        });
+    });
+
     app.get('/app2_1', (req, res) => {
       res.send('app2_1');
     });
