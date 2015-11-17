@@ -7,25 +7,65 @@ import {
 class UserApp extends App {
   constructor(app) {
     super(app);
+    registerModel(require('./models/role').default);
     registerModel(require('./models/user').default);
   }
 
   init(models) {
-    // insert data in development env
-    if (env.development) {
-      models.user
-        .create({
-          email: 'test@test.test',
-          name: 'test',
-          password: 'test',
-        })
-        .then((user) => {
-          console.log(user.toJSON());
-        })
-        .catch((err) => {
-          console.error(err);
-        });
-    }
+    models.role
+      .findOrCreate({
+        name: 'root',
+      })
+      .then((role) => {
+        return models.user
+          .create({
+            email: 'root@exseed.org',
+            name: 'root',
+            password: 'root',
+            role: role.id,
+          });
+      })
+      .then((user) => {
+        return models.role
+          .findOrCreate({
+            name: 'admin',
+          });
+      })
+      .then((role) => {
+        return models.user
+          .create({
+            email: 'admin@exseed.org',
+            name: 'admin',
+            password: 'admin',
+            role: role.id,
+          });
+      })
+      .then((user) => {
+        return models.role
+          .findOrCreate({
+            name: 'user',
+          });
+      })
+      .then((role) => {
+        return models.user
+          .create({
+            email: 'user@exseed.org',
+            name: 'user',
+            password: 'user',
+            role: role.id,
+          });
+      })
+      .then((user) => {
+        return models.user
+          .find()
+          .populate('role');
+      })
+      .then((users) => {
+        console.log(users);
+      })
+      .catch((err) => {
+        console.error(err);
+      });
   }
 
   routing(app, router, models) {
