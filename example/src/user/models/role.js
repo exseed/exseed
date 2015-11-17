@@ -7,7 +7,8 @@ export default {
     },
 
     users: {
-      model: 'role',
+      collection: 'user',
+      via: 'role',
     },
 
     toJSON() {
