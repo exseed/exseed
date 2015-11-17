@@ -28,6 +28,9 @@ const _rootExpressApp = express();
 // exseed project directory
 const _projectDir = process.cwd();
 
+// waterline orm models
+export let models = null;
+
 export let middlewares = {
   // expose express's `static` method
   static: express.static,
@@ -186,6 +189,9 @@ export function run(customSettings, cb) {
     if (err) {
       return cb(err);
     }
+
+    // assign all models to exported variable
+    models = ontology.collections;
 
     // initialize exseed app
     if (process.env.EXSEED_INIT === 'true') {
