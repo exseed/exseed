@@ -132,14 +132,6 @@ class UserApp extends App {
           res.json(permissions);
         });
     });
-
-    app.get('/app2_1', (req, res) => {
-      res.send('app2_1');
-    });
-
-    this.expressApp.get('/app2_2', (req, res) => {
-      res.send('app2_2');
-    });
   }
 
   onError(err, req, res) {
