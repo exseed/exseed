@@ -16,6 +16,9 @@ import webpackHotMiddleware from 'webpack-hot-middleware';
 // registered app instances
 let _appMap = {};
 
+// exported app modules
+let _appModules = {};
+
 // setting object
 let _appSettings = {};
 
@@ -61,12 +64,13 @@ export class App {
    * and mount it onto the top level express app
    * @constructs App
    */
-  constructor(app) {
+  constructor(app, name) {
     /**
      * The express app
      * @member App#expressApp
      */
     this.expressApp = app;
+    this.name = name;
     _rootExpressApp.use('/', this.expressApp);
   }
 
@@ -77,6 +81,10 @@ export class App {
   }
 
   onError(err, req, res) {
+  }
+
+  getModules() {
+    return {};
   }
 }
 
@@ -97,6 +105,10 @@ export class PageNotFound extends Err {
   }
 }
 
+export function load(appName) {
+  return _appMap[appName].getModules();
+}
+
 /**
  * Register an exseed app
  * @param {string} appName - An identifier of exseed app
@@ -107,7 +119,7 @@ export function registerApp(appName, AppClass) {
   let newExpressApp = express();
   newExpressApp.use('/' + appName, express.static(
     path.join(_projectDir, 'build', _dest, appName, 'public')));
-  const appInstance = new AppClass(newExpressApp);
+  const appInstance = new AppClass(newExpressApp, appName);
   _appMap[appName] = appInstance;
   return appInstance;
 }

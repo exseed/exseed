@@ -5,8 +5,8 @@ import {
 } from 'exseed';
 
 class UserApp extends App {
-  constructor(app) {
-    super(app);
+  constructor(app, name) {
+    super(app, name);
     registerModel(require('./models/permission').default);
     registerModel(require('./models/role').default);
     registerModel(require('./models/user').default);
@@ -84,6 +84,13 @@ class UserApp extends App {
       .catch((err) => {
         console.error(err);
       });
+  }
+
+  getModules() {
+    return {
+      example: 'this is an export example, ' +
+               'you can export something from here',
+    };
   }
 
   routing(app, models) {

@@ -1,4 +1,7 @@
-import { App } from 'exseed';
+import {
+  App,
+  load
+} from 'exseed';
 import path from 'path';
 import favicon from 'serve-favicon';
 import morgan from 'morgan';
@@ -10,8 +13,8 @@ class BasicApp extends App {
    * Setup environments like logging requests, create server, etc.
    * @param {object} app - the express app instance
    */
-  constructor(app) {
-    super(app);
+  constructor(app, name) {
+    super(app, name);
     app.use(favicon(path.join(__dirname, 'public/favicon.ico')));
     morgan.token('colorStatus', (req, res) => {
       const status = res.statusCode;
@@ -85,6 +88,11 @@ class BasicApp extends App {
 
     app.get('/error', (req, res) => {
       throw new Error('make error in purpose');
+    });
+
+    app.get('/module/user', (req, res) => {
+      let userModules = load('user');
+      res.json(userModules);
     });
   }
 
