@@ -13,8 +13,8 @@ class BasicApp extends App {
    * Setup environments like logging requests, create server, etc.
    * @param {object} app - the express app instance
    */
-  constructor(app, name) {
-    super(app, name);
+  constructor(app, name, dir) {
+    super(app, name, dir);
     app.use(favicon(path.join(__dirname, 'public/favicon.ico')));
     morgan.token('colorStatus', (req, res) => {
       const status = res.statusCode;

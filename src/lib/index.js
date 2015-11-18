@@ -13,6 +13,26 @@ import config from './webpack.config.dev';
 import webpackDevMiddleware from 'webpack-dev-middleware';
 import webpackHotMiddleware from 'webpack-hot-middleware';
 
+/**
+ * Environment related variables
+ */
+
+export const ENV = process.env.NODE_ENV || 'development';
+export const env = {
+  development: ENV === 'development',
+  test: ENV === 'test',
+  production: ENV === 'production',
+};
+
+/**
+ * Private global variables
+ */
+
+const _dest = (
+  env.development? 'debug':
+  env.test?        'test':
+                   'release');
+
 // registered app instances
 let _appMap = {};
 
@@ -29,7 +49,15 @@ const _waterline = new Waterline();
 const _rootExpressApp = express();
 
 // exseed project directory
-const _projectDir = process.cwd();
+const _dir = {
+  projectRoot: process.cwd(),
+  projectSrc: path.join(process.cwd(), 'src'),
+  projectTarget: path.join(process.cwd(), 'build', _dest),
+};
+
+/**
+ * Exported variables and functions
+ */
 
 // waterline orm models
 export let models = null;
@@ -38,21 +66,6 @@ export let middlewares = {
   // expose express's `static` method
   static: express.static,
 };
-
-/**
- * Environment related variables
- */
-export const ENV = process.env.NODE_ENV || 'development';
-export const env = {
-  development: ENV === 'development',
-  test: ENV === 'test',
-  production: ENV === 'production',
-};
-
-const _dest = (
-  env.development? 'debug':
-  env.test?        'test':
-                   'release');
 
 /**
  * App class
@@ -64,13 +77,14 @@ export class App {
    * and mount it onto the top level express app
    * @constructs App
    */
-  constructor(app, name) {
+  constructor(app, name, dir) {
     /**
      * The express app
      * @member App#expressApp
      */
     this.expressApp = app;
     this.name = name;
+    this.dir = dir;
     _rootExpressApp.use('/', this.expressApp);
   }
 
@@ -115,11 +129,13 @@ export function load(appName) {
  * @param {App} AppClass
  *   - An exseed app class declaration extends from App
  */
-export function registerApp(appName, AppClass) {
+export function registerApp(appName, appDir) {
+  let AppClass = require(
+    path.join(_dir.projectTarget, appDir, 'index.js')).default;
   let newExpressApp = express();
   newExpressApp.use('/' + appName, express.static(
-    path.join(_projectDir, 'build', _dest, appName, 'public')));
-  const appInstance = new AppClass(newExpressApp, appName);
+    path.join(_dir.projectTarget, appDir, 'public')));
+  const appInstance = new AppClass(newExpressApp, appName, appDir);
   _appMap[appName] = appInstance;
   return appInstance;
 }
@@ -174,7 +190,8 @@ export function run(customSettings, cb) {
     // webpack compilation
     let appArray = [];
     for (let appName in _appMap) {
-      const srcPath = path.join(process.env.PWD, `src/${appName}/flux/boot.js`);
+      let exseedApp = _appMap[appName];
+      const srcPath = path.join(_dir.projectSrc, exseedApp.dir, 'flux/boot.js');
       if (fs.existsSync(srcPath)) {
         appArray.push(appName);
         config.entry[appName] = [
@@ -183,7 +200,7 @@ export function run(customSettings, cb) {
         ];
       }
     }
-    config.output.path = path.join(process.env.PWD, `build/${_dest}/public/`);
+    config.output.path = path.join(_dir.projectTarget, 'public/');
     config.plugins.push(
       new webpack.optimize.CommonsChunkPlugin('js/common.js', appArray),
     );
@@ -222,15 +239,16 @@ export function run(customSettings, cb) {
 
     // render full page view
     for (let appName in _appMap) {
-      let app = _appMap[appName].expressApp;
+      let exseedApp = _appMap[appName];
+      let app = exseedApp.expressApp;
       const routesPath = path.join(
-        process.env.PWD, 'build', _dest, appName, 'routes.js');
+        _dir.projectTarget, exseedApp.dir, 'routes.js');
       if (fs.existsSync(routesPath)) {
         const App = require(routesPath).default;
         app.get('/*', (req, res, next) => {
           try {
             const Helmet = require(
-              path.join(process.env.PWD, 'node_modules/react-helmet'));
+              path.join(_dir.projectRoot, 'node_modules/react-helmet'));
             // the order of generating `html` and `head` cannot be exchanged
             // it's fucking weird...
             const html = ReactDOMServer.renderToString(

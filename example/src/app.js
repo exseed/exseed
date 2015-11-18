@@ -2,8 +2,8 @@ import 'source-map-support/register';
 import * as exseed from 'exseed';
 import settings from './settings.server';
 
-exseed.registerApp('basic', require('./basic/').default);
-exseed.registerApp('user', require('./user/').default);
+exseed.registerApp('basic', './basic');
+exseed.registerApp('user', './user');
 
 exseed.run(settings, (err, models, port) => {
   if (err) {

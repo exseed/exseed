@@ -5,8 +5,8 @@ import {
 } from 'exseed';
 
 class UserApp extends App {
-  constructor(app, name) {
-    super(app, name);
+  constructor(app, name, dir) {
+    super(app, name, dir);
     registerModel(require('./models/permission').default);
     registerModel(require('./models/role').default);
     registerModel(require('./models/user').default);
