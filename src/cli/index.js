@@ -1,6 +1,7 @@
 #! /usr/bin/env node
 
 import path from 'path';
+import fs from 'fs';
 import program from 'commander';
 import pkg from '../package.json';
 
@@ -13,6 +14,7 @@ import sourcemaps from 'gulp-sourcemaps';
 import gulpif from 'gulp-if';
 import notify from 'gulp-notify';
 import nodemon from 'gulp-nodemon';
+import mocha from 'gulp-mocha';
 
 // since we are calling gulp tasks from node scripts
 // instead of `gulp` command, we use the logging
@@ -117,7 +119,7 @@ const registerTasks = (options) => {
 
   gulp.task('exec', ['build', 'copy'], (cb) => {
     const exec = require('child_process').exec;
-    const child = exec('node build/debug/app.js', {
+    const child = exec(`node build/${dest}/app.js`, {
       env: {
         NODE_ENV: NODE_ENV,
         EXSEED_INIT: options.init,
@@ -172,6 +174,50 @@ const registerTasks = (options) => {
     .on('restart', () => {
     });
   });
+
+  gulp.task('test', ['build', 'copy'], () => {
+    // launch testing server
+    const exec = require('child_process').exec;
+    const child = exec('node build/test/app.js', {
+      env: {
+        NODE_ENV: NODE_ENV,
+        EXSEED_INIT: options.init,
+      },
+    });
+
+    // the mocha spec file(s)
+    let specSrc;
+    const cwd = process.cwd();
+    if (options.appDir === undefined) {
+      // test all apps
+      let targetDir = path.join(cwd, 'build/test');
+      specSrc = fs
+        .readdirSync(targetDir)
+        .map((appDir) => {
+          return path.join(targetDir, appDir, 'test/index.js');
+        })
+        .filter((appSpecPath) => {
+          return fs.existsSync(appSpecPath);
+        });
+    } else {
+      // test single app
+      specSrc = path.join(
+        cwd, 'build/test', options.appDir, 'test/index.js');
+    }
+
+    // run mocha test
+    return gulp
+      .src(specSrc, { read: false })
+      .pipe(mocha({ reporter: 'spec' }))
+      .once('error', () => {
+        child.kill('SIGINT');
+        process.exit(1);
+      })
+      .once('end', () => {
+        child.kill('SIGINT');
+        process.exit();
+      });
+  });
 };
 
 /**
@@ -225,6 +271,21 @@ program
     registerTasks(options);
     // run gulp tasks
     gulp.start('build', 'copy', 'nodemon', 'watch');
+  });
+
+// specify command `test`
+program
+  .command('test [appDir]')
+  .alias('t')
+  .description('test apps')
+  .action((appDir) => {
+    registerTasks({
+      development: false,
+      test: true,
+      production: false,
+      appDir: appDir,
+    });
+    gulp.start('build', 'copy', 'test');
   });
 
 // to customize command name in help information

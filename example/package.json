@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "body-parser": "^1.14.1",
+    "chai": "^3.4.1",
     "cookie-parser": "^1.4.0",
     "morgan": "^1.6.1",
     "react": "^0.14.2",
@@ -27,6 +28,7 @@
     "react-router-component": "^0.27.2",
     "sails-disk": "^0.10.8",
     "sails-memory": "^0.10.5",
-    "serve-favicon": "^2.3.0"
+    "serve-favicon": "^2.3.0",
+    "superagent": "^1.4.0"
   }
 }

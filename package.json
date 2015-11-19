@@ -4,8 +4,12 @@
   "description": "A highly extensible nodejs framework",
   "main": "lib/index.js",
   "scripts": {
-    "test": "npm run jscs",
-    "jscs": "jscs --verbose ./src"
+    "test": "npm run jscs_lib && npm run jscs_example && npm run clean_db && npm run init_example && npm run mocha_example",
+    "jscs_lib": "jscs ./src --config=./.jscsrc --verbose",
+    "jscs_example": "jscs ./example/src --config=./example/.jscsrc --verbose",
+    "clean_db": "rm -rf ./example/.db/test.default.db",
+    "init_example": "cd example && node ../cli/index.js init -t && cd ..",
+    "mocha_example": "cd example && node ../cli/index.js test && cd .."
   },
   "repository": {
     "type": "git",
@@ -41,6 +45,7 @@
     "gulp-babel": "^6.0.0",
     "gulp-changed": "^1.3.0",
     "gulp-if": "^2.0.0",
+    "gulp-mocha": "^2.2.0",
     "gulp-nodemon": "^2.0.4",
     "gulp-notify": "^2.2.0",
     "gulp-sourcemaps": "^1.6.0",
