@@ -57,6 +57,8 @@ const registerTasks = (options) => {
     env.t? 'test':
            'release');
 
+  let appProcess;
+
   /**
    * Specify gulp tasks
    */
@@ -119,25 +121,33 @@ const registerTasks = (options) => {
 
   gulp.task('exec', ['build', 'copy'], (cb) => {
     const exec = require('child_process').exec;
-    const child = exec(`node build/${dest}/app.js`, {
+    appProcess = exec(`node build/${dest}/app.js`, {
       env: {
+        // inherit all parent environment variables
+        // to run `node` binary with $PATH
+        // ref: https://github.com/travis-ci/travis-ci/issues/3894
+        ...process.env,
         NODE_ENV: NODE_ENV,
         EXSEED_INIT: options.init,
       },
     });
 
     // show outputs in realtime
-    child.stdout.on('data', (data) => {
+    appProcess.stdout.on('data', (data) => {
       console.log(data);
     });
 
-    child.stderr.on('data', (data) => {
+    appProcess.stderr.on('data', (data) => {
       console.log(data);
     });
 
-    child.on('close', (code) => {
+    if (!env.t) {
+      appProcess.on('close', (code) => {
+        cb();
+      });
+    } else {
       cb();
-    });
+    }
   });
 
   gulp.task('nodemon', ['build', 'copy'], (cb) => {
@@ -175,16 +185,7 @@ const registerTasks = (options) => {
     });
   });
 
-  gulp.task('test', ['build', 'copy'], () => {
-    // launch testing server
-    const exec = require('child_process').exec;
-    const child = exec('node build/test/app.js', {
-      env: {
-        NODE_ENV: NODE_ENV,
-        EXSEED_INIT: options.init,
-      },
-    });
-
+  gulp.task('test', ['exec'], (cb) => {
     // the mocha spec file(s)
     let specSrc;
     const cwd = process.cwd();
@@ -206,17 +207,20 @@ const registerTasks = (options) => {
     }
 
     // run mocha test
-    return gulp
-      .src(specSrc, { read: false })
-      .pipe(mocha({ reporter: 'spec' }))
-      .once('error', () => {
-        child.kill('SIGINT');
-        process.exit(1);
-      })
-      .once('end', () => {
-        child.kill('SIGINT');
-        process.exit();
-      });
+    setTimeout(() => {
+      gulp
+        .src(specSrc, { read: false })
+        .pipe(mocha({ reporter: 'spec' }))
+        .once('error', () => {
+          appProcess.kill('SIGINT');
+          process.exit(1);
+        })
+        .once('end', () => {
+          appProcess.kill('SIGINT');
+          process.exit();
+        });
+      cb();
+    }, 5000);
   });
 };
 
@@ -285,7 +289,7 @@ program
       production: false,
       appDir: appDir,
     });
-    gulp.start('build', 'copy', 'test');
+    gulp.start('build', 'copy', 'exec', 'test');
   });
 
 // to customize command name in help information

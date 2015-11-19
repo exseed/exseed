@@ -301,7 +301,12 @@ export function run(customSettings, cb) {
     const port = _appSettings.server.port[ENV];
     _rootExpressApp.httpServer = http
       .createServer(_rootExpressApp)
-      .listen(port, cb.bind(this, null, ontology.collections, port));
+      .listen(port, () => {
+        cb(null, ontology.collections, port);
+      })
+      .on('error', (err) => {
+        cb(err, ontology.collections, port);
+      });
   });
 }
 

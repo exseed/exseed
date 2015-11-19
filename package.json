@@ -4,12 +4,14 @@
   "description": "A highly extensible nodejs framework",
   "main": "lib/index.js",
   "scripts": {
-    "test": "npm run jscs_lib && npm run jscs_example && npm run clean_db && npm run init_example && npm run mocha_example",
+    "test": "npm run jscs_lib && npm run jscs_example && npm run build_exseed_cli && npm run link_exseed && npm run clean_db && npm run init_example && npm run mocha_example",
     "jscs_lib": "jscs ./src --config=./.jscsrc --verbose",
     "jscs_example": "jscs ./example/src --config=./example/.jscsrc --verbose",
+    "build_exseed_cli": "gulp",
+    "link_exseed": "npm link . && cd example && npm link exseed",
     "clean_db": "rm -rf ./example/.db/test.default.db",
-    "init_example": "cd example && node ../cli/index.js init -t && cd ..",
-    "mocha_example": "cd example && node ../cli/index.js test && cd .."
+    "init_example": "cd example && sd init -t && cd ..",
+    "mocha_example": "cd example && sd test && cd .."
   },
   "repository": {
     "type": "git",
