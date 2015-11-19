@@ -1,4 +1,4 @@
-import gutil from 'gulp/node_modules/gulp-util';
+import gutil from 'gulp-util';
 import prettyTime from 'gulp/node_modules/pretty-hrtime';
 import chalk from 'gulp/node_modules/chalk';
 
