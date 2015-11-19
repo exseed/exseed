@@ -159,7 +159,7 @@ export function registerModel(schema) {
      */
     migrate: schema.migrate || (
       env.development? 'alter':
-      env.test? 'drop':
+      env.test? 'safe':
       'safe'),
   });
   let collections = Waterline.Collection.extend(schema);

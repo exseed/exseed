@@ -24,11 +24,12 @@ export default {
     },
     test: {
       adapters: {
-        memory: sailsMemory,
+        disk: sailsDisk,
       },
       connections: {
         default: {
-          adapter: 'memory',
+          adapter: 'disk',
+          filePath: path.join(__dirname, '../../.db/test.'),
         },
       },
     },
