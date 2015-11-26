@@ -34,10 +34,7 @@ const _dest = (
                    'release');
 
 // registered app instances
-let _appMap = {};
-
-// exported app modules
-let _appModules = {};
+let _appInstances = {};
 
 // setting object
 let _appSettings = {};
@@ -120,7 +117,7 @@ export class PageNotFound extends Err {
 }
 
 export function load(appName) {
-  return _appMap[appName].getModules();
+  return _appInstances[appName].getModules();
 }
 
 /**
@@ -136,7 +133,7 @@ export function registerApp(appName, appDir) {
   newExpressApp.use('/' + appName, express.static(
     path.join(_dir.projectTarget, appDir, 'public')));
   const appInstance = new AppClass(newExpressApp, appName, appDir);
-  _appMap[appName] = appInstance;
+  _appInstances[appName] = appInstance;
   return appInstance;
 }
 
@@ -189,8 +186,8 @@ export function run(customSettings, cb) {
     console.log('using livereload');
     // webpack compilation
     let appArray = [];
-    for (let appName in _appMap) {
-      let exseedApp = _appMap[appName];
+    for (let appName in _appInstances) {
+      let exseedApp = _appInstances[appName];
       const srcPath = path.join(_dir.projectSrc, exseedApp.dir, 'flux/boot.js');
       if (fs.existsSync(srcPath)) {
         appArray.push(appName);
@@ -224,22 +221,22 @@ export function run(customSettings, cb) {
 
     // initialize exseed app
     if (process.env.EXSEED_INIT === 'true') {
-      for (let appName in _appMap) {
-        let exseedApp = _appMap[appName];
+      for (let appName in _appInstances) {
+        let exseedApp = _appInstances[appName];
         exseedApp.init(ontology.collections);
       }
       return;
     }
 
     // setup exseed app's routing rules
-    for (let appName in _appMap) {
-      let exseedApp = _appMap[appName];
+    for (let appName in _appInstances) {
+      let exseedApp = _appInstances[appName];
       exseedApp.routing(exseedApp.expressApp, ontology.collections);
     }
 
     // render full page view
-    for (let appName in _appMap) {
-      let exseedApp = _appMap[appName];
+    for (let appName in _appInstances) {
+      let exseedApp = _appInstances[appName];
       let app = exseedApp.expressApp;
       const routesPath = path.join(
         _dir.projectTarget, exseedApp.dir, 'routes.js');
@@ -290,8 +287,8 @@ export function run(customSettings, cb) {
     // error handling
     _rootExpressApp.use((err, req, res, next) => {
       if (err) {
-        for (let appName in _appMap) {
-          let exseedApp = _appMap[appName];
+        for (let appName in _appInstances) {
+          let exseedApp = _appInstances[appName];
           exseedApp.onError(err, req, res);
         }
       }
