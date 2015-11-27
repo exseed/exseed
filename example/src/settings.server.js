@@ -1,5 +1,4 @@
 import path from 'path';
-import sailsMemory from 'sails-memory';
 import sailsDisk from 'sails-disk';
 
 export default {
