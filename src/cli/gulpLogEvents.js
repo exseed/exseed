@@ -1,6 +1,6 @@
 import gutil from 'gulp-util';
-import prettyTime from 'gulp/node_modules/pretty-hrtime';
-import chalk from 'gulp/node_modules/chalk';
+import prettyTime from 'pretty-hrtime';
+import chalk from 'chalk';
 
 /**
  * This is the gulp cli logging mechanism extracted and modified

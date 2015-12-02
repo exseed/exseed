@@ -295,7 +295,7 @@ export function run(customSettings, cb) {
     });
 
     // launch server
-    const port = _appSettings.server.port[ENV];
+    const port = process.env.PORT || _appSettings.server.port[ENV];
     _rootExpressApp.httpServer = http
       .createServer(_rootExpressApp)
       .listen(port, () => {
