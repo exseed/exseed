@@ -8,8 +8,10 @@ export default class HomePage extends React.Component {
 
   render() {
     return <AppLayout>
-      <h1>Home</h1>
-      <button onClick={this.handleClick}>Click me</button>
+      <div className="container">
+        <h1>Home</h1>
+        <button onClick={this.handleClick}>Click me</button>
+      </div>
     </AppLayout>;
   }
 };
