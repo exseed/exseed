@@ -28,10 +28,16 @@ module.exports = {
   devtool: 'eval',
   entry: {},
   output: {
-    filename: '[name]/js/bundle.js',
+    filename: '[name]/public/js/bundle.js',
     publicPath: '/',
   },
   plugins: [
+    new webpack.DefinePlugin({
+      'process.env': {
+        NODE_ENV: JSON.stringify('development'),
+        BROWSER: JSON.stringify(true),
+      },
+    }),
     new webpack.HotModuleReplacementPlugin(),
     new webpack.NoErrorsPlugin(),
   ],

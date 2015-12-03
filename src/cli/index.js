@@ -10,6 +10,7 @@ import gulpLogEvents from './gulpLogEvents';
 import gutil from 'gulp-util';
 import changed from 'gulp-changed';
 import babel from 'gulp-babel';
+import webpack from 'webpack';
 import sourcemaps from 'gulp-sourcemaps';
 import gulpif from 'gulp-if';
 import notify from 'gulp-notify';
@@ -110,6 +111,40 @@ const registerTasks = (options) => {
       .pipe(gulp.dest('./build/' + dest));
   });
 
+  gulp.task('webpack', ['build'], (cb) => {
+    // to require `app.js` in the correct environment
+    process.env.NODE_ENV = NODE_ENV;
+    const config = require(`../webpack/webpack.config.${NODE_ENV}`);
+    const exseed = require(path.join(
+      process.cwd(), 'build', dest, 'app.js')).default;
+    let _appInstances = exseed.getAppInstances();
+    let appArray = [];
+    for (let appName in _appInstances) {
+      let exseedApp = _appInstances[appName];
+      const srcPath = path.join(
+        process.cwd(), 'src', exseedApp.dir, 'flux/boot.js');
+      if (fs.existsSync(srcPath)) {
+        appArray.push(appName);
+        config.entry[exseedApp.dir] = [
+          srcPath,
+        ];
+      }
+    }
+
+    config.output.path = path.join(process.cwd(), 'build', dest);
+    config.plugins.push(
+      new webpack.optimize.CommonsChunkPlugin('public/js/common.js', appArray),
+    );
+
+    webpack(config, (err, stats) => {
+      if (err) {
+        gutil.log(err);
+      } else {
+        cb();
+      }
+    });
+  });
+
   gulp.task('copy', function() {
     return gulp
       .src([
@@ -119,9 +154,9 @@ const registerTasks = (options) => {
       .pipe(gulp.dest('./build/' + dest));
   });
 
-  gulp.task('exec', ['build', 'copy'], (cb) => {
+  gulp.task('exec', ['build', 'webpack', 'copy'], (cb) => {
     const exec = require('child_process').exec;
-    appProcess = exec(`node build/${dest}/app.js`, {
+    appProcess = exec(`node build/${dest}/server.js`, {
       env: {
         // inherit all parent environment variables
         // to run `node` binary with $PATH
@@ -150,11 +185,11 @@ const registerTasks = (options) => {
     }
   });
 
-  gulp.task('nodemon', ['build', 'copy'], (cb) => {
+  gulp.task('nodemon', ['build', 'webpack', 'copy'], (cb) => {
     let started = false;
 
     return nodemon({
-      script: `build/${dest}/app.js`,
+      script: `build/${dest}/server.js`,
       watch: [`build/${dest}/**/*.js`],
       ext: 'js',
       env: {
@@ -258,7 +293,7 @@ program
     options.init = true;
     registerTasks(options);
     // run gulp tasks
-    gulp.start('build', 'copy', 'exec');
+    gulp.start('build', 'webpack', 'copy', 'exec');
   });
 
 // specify command `serve`
@@ -274,7 +309,7 @@ program
   .action((options) => {
     registerTasks(options);
     // run gulp tasks
-    gulp.start('build', 'copy', 'nodemon', 'watch');
+    gulp.start('build', 'webpack', 'copy', 'nodemon', 'watch');
   });
 
 // specify command `test`
@@ -289,7 +324,7 @@ program
       production: false,
       appDir: appDir,
     });
-    gulp.start('build', 'copy', 'exec', 'test');
+    gulp.start('build', 'webpack', 'copy', 'exec', 'test');
   });
 
 // to customize command name in help information

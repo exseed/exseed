@@ -7,12 +7,6 @@ import assign from 'object-assign';
 import React from 'react';
 import ReactDOMServer from 'react-dom/server';
 
-// dependencies for livereloading react
-import webpack from 'webpack';
-import config from './webpack.config.dev';
-import webpackDevMiddleware from 'webpack-dev-middleware';
-import webpackHotMiddleware from 'webpack-hot-middleware';
-
 /**
  * Environment related variables
  */
@@ -137,6 +131,10 @@ export function registerApp(appName, appDir) {
   return appInstance;
 }
 
+export function getAppInstances(appName, appDir) {
+  return _appInstances;
+}
+
 /**
  * Register a waterline model
  * @param {object} schema - A waterline schema definition
@@ -184,6 +182,13 @@ export function run(customSettings, cb) {
 
   if (process.env.EXSEED_WATCH === 'true') {
     console.log('using livereload');
+
+    // dependencies for livereloading react
+    const webpack = require('webpack');
+    const config = require('../webpack/webpack.config.development');
+    const webpackDevMiddleware = require('webpack-dev-middleware');
+    const webpackHotMiddleware = require('webpack-hot-middleware');
+
     // webpack compilation
     let appArray = [];
     for (let appName in _appInstances) {
@@ -191,15 +196,15 @@ export function run(customSettings, cb) {
       const srcPath = path.join(_dir.projectSrc, exseedApp.dir, 'flux/boot.js');
       if (fs.existsSync(srcPath)) {
         appArray.push(appName);
-        config.entry[appName] = [
+        config.entry[exseedApp.dir] = [
           srcPath,
           'webpack-hot-middleware/client',
         ];
       }
     }
-    config.output.path = path.join(_dir.projectTarget, 'public/');
+    config.output.path = _dir.projectTarget;
     config.plugins.push(
-      new webpack.optimize.CommonsChunkPlugin('js/common.js', appArray),
+      new webpack.optimize.CommonsChunkPlugin('public/js/common.js', appArray),
     );
 
     let compiler = webpack(config);
@@ -209,6 +214,10 @@ export function run(customSettings, cb) {
     }));
     _rootExpressApp.use(webpackHotMiddleware(compiler));
   }
+
+  // serve global static files
+  _rootExpressApp.use(express.static(
+    path.join(_dir.projectTarget, 'public')));
 
   // initialize ORM
   _waterline.initialize(_appSettings.db[ENV], (err, ontology) => {
