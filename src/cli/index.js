@@ -75,6 +75,10 @@ const registerTasks = (options) => {
         ], ['build']);
       gulp
         .watch([
+          './src/*/flux/**/*.js',
+        ], ['webpack']);
+      gulp
+        .watch([
           // refer to `copy` task's src
           'src/*/public/**/*',
         ], ['copy']);

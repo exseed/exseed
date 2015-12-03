@@ -124,8 +124,6 @@ export function registerApp(appName, appDir) {
   let AppClass = require(
     path.join(_dir.projectTarget, appDir, 'index.js')).default;
   let newExpressApp = express();
-  newExpressApp.use('/' + appName, express.static(
-    path.join(_dir.projectTarget, appDir, 'public')));
   const appInstance = new AppClass(newExpressApp, appName, appDir);
   _appInstances[appName] = appInstance;
   return appInstance;
@@ -185,7 +183,7 @@ export function run(customSettings, cb) {
 
     // dependencies for livereloading react
     const webpack = require('webpack');
-    const config = require('../webpack/webpack.config.development');
+    const config = require('../webpack/webpack.config.livereload');
     const webpackDevMiddleware = require('webpack-dev-middleware');
     const webpackHotMiddleware = require('webpack-hot-middleware');
 
@@ -196,7 +194,7 @@ export function run(customSettings, cb) {
       const srcPath = path.join(_dir.projectSrc, exseedApp.dir, 'flux/boot.js');
       if (fs.existsSync(srcPath)) {
         appArray.push(appName);
-        config.entry[exseedApp.dir] = [
+        config.entry[appName] = [
           srcPath,
           'webpack-hot-middleware/client',
         ];
@@ -204,7 +202,7 @@ export function run(customSettings, cb) {
     }
     config.output.path = _dir.projectTarget;
     config.plugins.push(
-      new webpack.optimize.CommonsChunkPlugin('public/js/common.js', appArray),
+      new webpack.optimize.CommonsChunkPlugin('js/common.js', appArray),
     );
 
     let compiler = webpack(config);
@@ -214,10 +212,6 @@ export function run(customSettings, cb) {
     }));
     _rootExpressApp.use(webpackHotMiddleware(compiler));
   }
-
-  // serve global static files
-  _rootExpressApp.use(express.static(
-    path.join(_dir.projectTarget, 'public')));
 
   // initialize ORM
   _waterline.initialize(_appSettings.db[ENV], (err, ontology) => {
@@ -235,6 +229,17 @@ export function run(customSettings, cb) {
         exseedApp.init(ontology.collections);
       }
       return;
+    }
+
+    // serve global static files
+    _rootExpressApp.use(express.static(
+      path.join(_dir.projectTarget, 'public')));
+
+    // serve app's static files
+    for (let appName in _appInstances) {
+      let exseedApp = _appInstances[appName];
+      _rootExpressApp.use('/' + appName, express.static(
+        path.join(_dir.projectTarget, exseedApp.dir, 'public')));
     }
 
     // setup exseed app's routing rules
