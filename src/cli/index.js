@@ -64,34 +64,44 @@ const registerTasks = (options) => {
    * Specify gulp tasks
    */
 
+  const files = {
+    scripts: [
+      './src/**/*.js',
+      '!src/*/public/**/*.js',
+    ],
+    flux: [
+      './src/*/flux/**/*.js',
+    ],
+    statics: [
+      'src/*/public/**/*',
+    ],
+    nodemonRestartIgnore: [
+      'gulpfile.js',
+      'node_modules/**/*',
+      'src/**/*',
+      'build/debug/public/js/*/bundle.js',
+      'build/debug/public/js/common.js',
+      'build/debug/*/flux/**/*',
+      'build/release/public/js/*/bundle.js',
+      'build/release/public/js/common.js',
+      'build/test/public/js/*/bundle.js',
+      'build/test/public/js/common.js',
+    ],
+  };
+
   // watching source files
   gulp.task('watch', () => {
     if (options.watch) {
-      gulp
-        .watch([
-          // refer to `build` task's src
-          './src/**/*.js',
-          '!src/*/public/**/*.js',
-        ], ['build']);
-      gulp
-        .watch([
-          './src/*/flux/**/*.js',
-        ], ['webpack']);
-      gulp
-        .watch([
-          // refer to `copy` task's src
-          'src/*/public/**/*',
-        ], ['copy']);
+      gulp.watch(files.scripts, ['build']);
+      gulp.watch(files.flux, ['webpack']);
+      gulp.watch(files.statics, ['copy']);
     }
   });
 
   // build source files
   gulp.task('build', () => {
     return gulp
-      .src([
-        './src/**/*.js',
-        '!src/*/public/**/*.js',
-      ])
+      .src(files.scripts)
       .pipe(gulpif(options.watch, changed('./build/' + dest)))
       .pipe(gulpif(env.d, sourcemaps.init()))
         .pipe(babel({
@@ -151,9 +161,7 @@ const registerTasks = (options) => {
 
   gulp.task('copy', function() {
     return gulp
-      .src([
-        'src/*/public/**/*',
-      ])
+      .src(files.statics)
       .pipe(gulpif(options.watch, changed('./build/' + dest)))
       .pipe(gulp.dest('./build/' + dest));
   });
@@ -201,18 +209,7 @@ const registerTasks = (options) => {
         EXSEED_WATCH: options.watch,
         EXSEED_INIT: options.init,
       },
-      ignore: [
-        'gulpfile.js',
-        'node_modules/**/*',
-        'src/**/*',
-        'build/debug/public/js/*/bundle.js',
-        'build/debug/public/js/common.js',
-        'build/debug/*/flux/**/*',
-        'build/release/public/js/*/bundle.js',
-        'build/release/public/js/common.js',
-        'build/test/public/js/*/bundle.js',
-        'build/test/public/js/common.js',
-      ],
+      ignore: files.nodemonRestartIgnore,
     })
     .on('start', () => {
       if (!started) {
