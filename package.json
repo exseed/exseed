@@ -2,7 +2,7 @@
   "name": "exseed",
   "version": "0.1.14",
   "description": "A highly extensible nodejs framework",
-  "main": "lib/index.js",
+  "main": "dist/lib/index.js",
   "scripts": {
     "test": "npm run jscs_lib && npm run jscs_example && npm run build_exseed_cli && npm run link_exseed && npm run clean_db && npm run init_example && npm run mocha_example",
     "jscs_lib": "jscs ./src --config=./.jscsrc --verbose",
@@ -29,7 +29,7 @@
   },
   "homepage": "https://github.com/exseed/exseed",
   "bin": {
-    "sd": "cli/index.js"
+    "sd": "dist/cli/index.js"
   },
   "dependencies": {
     "babel-core": "^6.1.2",

@@ -3,7 +3,7 @@
 import path from 'path';
 import fs from 'fs';
 import program from 'commander';
-import pkg from '../package.json';
+import pkg from '../../package.json';
 
 import gulp from 'gulp';
 import gulpLogEvents from './gulpLogEvents';

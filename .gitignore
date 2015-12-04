@@ -12,9 +12,7 @@ github.pub
 *.log
 
 # Build files
-/lib
-/cli
-/webpack
+/dist
 
 # Others
 .DS_Store

@@ -57,7 +57,7 @@ gulp.task('build', function() {
         return path.resolve(__dirname, 'src');
       },
     })))
-    .pipe(gulp.dest('./'));
+    .pipe(gulp.dest('./dist'));
 });
 
 // run gulp tasks
