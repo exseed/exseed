@@ -28,6 +28,27 @@ const _waterline = new Waterline();
 const _rootExpressApp = express();
 
 /**
+ * Private global functions
+ */
+
+/**
+ * @callback iterateCallback
+ * @param {string} appName - Current app name
+ * @param {object} exseedApp - Current app instance
+ */
+
+/**
+ * iterate through exseed apps
+ * @param {iterateCallback} cb - The callback when iterating
+ */
+let iterateApps = (cb) => {
+  for (let appName in _appInstances) {
+    let exseedApp = _appInstances[appName];
+    cb(appName, exseedApp);
+  }
+};
+
+/**
  * Exported variables and functions
  */
 
@@ -172,8 +193,7 @@ export function run(customSettings, cb) {
 
     // webpack compilation
     let appArray = [];
-    for (let appName in _appInstances) {
-      let exseedApp = _appInstances[appName];
+    iterateApps((appName, exseedApp) => {
       const srcPath = path.join(
         _env.dir.projectSrc, exseedApp.dir, 'flux/boot.js');
       if (fs.existsSync(srcPath)) {
@@ -183,7 +203,7 @@ export function run(customSettings, cb) {
           'webpack-hot-middleware/client',
         ];
       }
-    }
+    });
     config.output.path = _env.dir.projectTarget;
     config.plugins.push(
       new webpack.optimize.CommonsChunkPlugin('js/common.js', appArray),
@@ -208,10 +228,9 @@ export function run(customSettings, cb) {
 
     // initialize exseed app
     if (_env.init) {
-      for (let appName in _appInstances) {
-        let exseedApp = _appInstances[appName];
+      iterateApps((appName, exseedApp) => {
         exseedApp.init(ontology.collections);
-      }
+      });
       return;
     }
 
@@ -220,21 +239,20 @@ export function run(customSettings, cb) {
       path.join(_env.dir.projectTarget, 'public')));
 
     // serve app's static files
-    for (let appName in _appInstances) {
-      let exseedApp = _appInstances[appName];
+    iterateApps((appName, exseedApp) => {
       _rootExpressApp.use('/' + appName, express.static(
         path.join(_env.dir.projectTarget, exseedApp.dir, 'public')));
-    }
+    });
 
     // setup exseed app's routing rules
-    for (let appName in _appInstances) {
-      let exseedApp = _appInstances[appName];
+    iterateApps((appName, exseedApp) => {
       exseedApp.routing(exseedApp.expressApp, ontology.collections);
-    }
+    });
 
     // render full page view
-    for (let appName in _appInstances) {
-      let exseedApp = _appInstances[appName];
+    // for (let appName in _appInstances) {
+    //   let exseedApp = _appInstances[appName];
+    iterateApps((appName, exseedApp) => {
       let app = exseedApp.expressApp;
       const routesPath = path.join(
         _env.dir.projectTarget, exseedApp.dir, 'routes.js');
@@ -275,7 +293,7 @@ export function run(customSettings, cb) {
           }
         });
       }
-    }
+    });
 
     // 404
     _rootExpressApp.use((req, res, next) => {
@@ -285,10 +303,9 @@ export function run(customSettings, cb) {
     // error handling
     _rootExpressApp.use((err, req, res, next) => {
       if (err) {
-        for (let appName in _appInstances) {
-          let exseedApp = _appInstances[appName];
+        iterateApps((appName, exseedApp) => {
           exseedApp.onError(err, req, res);
-        }
+        });
       }
     });
 
