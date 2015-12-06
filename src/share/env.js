@@ -51,7 +51,8 @@ export function getEnv(cliOptions) {
       errors['ERR_MULTIPLE_ENV'] = true;
     }
 
-    if (errors) {
+    if (errors.ERR_NO_ENV ||
+        errors.ERR_MULTIPLE_ENV) {
       env = {
         development: true,
         test: false,
