@@ -23,7 +23,8 @@ import gulpLogEvents from './gulpLogEvents';
 import { getEnv } from '../share/env';
 import {
   validateEnv,
-  validatePath
+  validatePath,
+  reportEnv
 } from './helpers';
 
 // since we are calling gulp tasks from node scripts
@@ -37,6 +38,7 @@ export function registerTasks(options) {
   let _env = getEnv(options);
   validateEnv(_env);
   validatePath(_env);
+  reportEnv(_env);
 
   // child process
   let _appProcess = null;

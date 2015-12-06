@@ -16,7 +16,9 @@ import gutil from 'gulp-util';
 export function validateEnv(env) {
   if (env.errors) {
     if (env.errors.ERR_NO_ENV) {
-      gutil.log('using `development` environment');
+      gutil.log(
+        'no environment is specified, ' +
+        'exseed will automatically use `development` environment');
     } else if (env.errors.ERR_MULTIPLE_ENV) {
       gutil.log(gutil.colors.red(
         '-d, -t and -p switches cannot be used in parallel'));
@@ -39,4 +41,22 @@ export function validatePath(env) {
       'This is not an exseed app directory'));
     process.exit(1);
   }
+};
+
+/**
+ * Pretty print `env` information
+ */
+export function reportEnv(env) {
+  gutil.log(
+    gutil.colors.blue('** env information **'));
+  gutil.log(
+    gutil.colors.blue(`NODE_ENV:       ${env.NODE_ENV}`));
+  gutil.log(
+    gutil.colors.blue(`watching:       ${env.watch}`));
+  gutil.log(
+    gutil.colors.blue(`project root:   ${env.dir.projectRoot}`));
+  gutil.log(
+    gutil.colors.blue(`project source: ${env.dir.projectSrc}`));
+  gutil.log(
+    gutil.colors.blue(`project target: ${env.dir.projectTarget}`));
 };
