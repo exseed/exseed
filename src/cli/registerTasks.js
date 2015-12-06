@@ -21,6 +21,10 @@ import mocha from 'gulp-mocha';
 // local modules
 import gulpLogEvents from './gulpLogEvents';
 import { getEnv } from '../share/env';
+import {
+  validateEnv,
+  validatePath
+} from './helpers';
 
 // since we are calling gulp tasks from node scripts
 // instead of `gulp` command, we use the logging
@@ -28,39 +32,11 @@ import { getEnv } from '../share/env';
 // to keep logs working properly
 gulpLogEvents(gulp);
 
-const _validateEnv = (env) => {
-  if (env.errors) {
-    if (env.errors.ERR_NO_ENV) {
-      gutil.log('using `development` environment');
-    } else if (env.errors.ERR_MULTIPLE_ENV) {
-      gutil.log(gutil.colors.red(
-        '-d, -t and -p switches cannot be used in parallel'));
-      process.exit(1);
-    }
-  }
-};
-
-/**
- * Check whether CLI runs under the right path
- */
-const _validatePath = (env) => {
-  const appFilePath = path.join(
-    env.dir.projectSrc, 'app.js');
-  const serverFilePath = path.join(
-    env.dir.projectSrc, 'server.js');
-  if (!fs.existsSync(appFilePath) ||
-      !fs.existsSync(serverFilePath)) {
-    gutil.log(gutil.colors.red(
-      'This is not an exseed app directory'));
-    process.exit(1);
-  }
-};
-
 export function registerTasks(options) {
   // environment related variables
   let _env = getEnv(options);
-  _validateEnv(_env);
-  _validatePath(_env);
+  validateEnv(_env);
+  validatePath(_env);
 
   // child process
   let _appProcess = null;
