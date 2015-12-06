@@ -28,29 +28,45 @@ import { getEnv } from '../share/env';
 // to keep logs working properly
 gulpLogEvents(gulp);
 
-export function registerTasks(options) {
-  /**
-   * Prepare env parameters
-   */
-
-  let _env = getEnv(options);
-  if (_env.errors) {
-    if (_env.errors.ERR_NO_ENV) {
+const _validateEnv = (env) => {
+  if (env.errors) {
+    if (env.errors.ERR_NO_ENV) {
       gutil.log('using `development` environment');
-    } else if (_env.errors.ERR_MULTIPLE_ENV) {
+    } else if (env.errors.ERR_MULTIPLE_ENV) {
       gutil.log(gutil.colors.red(
         '-d, -t and -p switches cannot be used in parallel'));
       process.exit(1);
     }
   }
+};
 
-  let _appProcess;
+/**
+ * Check whether CLI runs under the right path
+ */
+const _validatePath = (env) => {
+  const appFilePath = path.join(
+    env.dir.projectSrc, 'app.js');
+  const serverFilePath = path.join(
+    env.dir.projectSrc, 'server.js');
+  if (!fs.existsSync(appFilePath) ||
+      !fs.existsSync(serverFilePath)) {
+    gutil.log(gutil.colors.red(
+      'This is not an exseed app directory'));
+    process.exit(1);
+  }
+};
 
-  /**
-   * Specify gulp tasks
-   */
+export function registerTasks(options) {
+  // environment related variables
+  let _env = getEnv(options);
+  _validateEnv(_env);
+  _validatePath(_env);
 
-  const files = {
+  // child process
+  let _appProcess = null;
+
+  // file wildcards
+  const _files = {
     scripts: [
       './src/**/*.js',
       '!src/*/public/**/*.js',
@@ -75,19 +91,23 @@ export function registerTasks(options) {
     ],
   };
 
+  /**
+   * Specify gulp tasks
+   */
+
   // watching source files
   gulp.task('watch', () => {
     if (_env.watch) {
-      gulp.watch(files.scripts, ['build']);
-      gulp.watch(files.flux, ['webpack']);
-      gulp.watch(files.statics, ['copy']);
+      gulp.watch(_files.scripts, ['build']);
+      gulp.watch(_files.flux, ['webpack']);
+      gulp.watch(_files.statics, ['copy']);
     }
   });
 
   // build source files
   gulp.task('build', () => {
     return gulp
-      .src(files.scripts)
+      .src(_files.scripts)
       .pipe(gulpif(_env.watch, changed(_env.dir.projectTarget)))
       .pipe(gulpif(_env.env.development, sourcemaps.init()))
         .pipe(babel({
@@ -147,7 +167,7 @@ export function registerTasks(options) {
 
   gulp.task('copy', function() {
     return gulp
-      .src(files.statics)
+      .src(_files.statics)
       .pipe(gulpif(_env.watch, changed(_env.dir.projectTarget)))
       .pipe(gulp.dest(_env.dir.projectTarget));
   });
@@ -195,7 +215,7 @@ export function registerTasks(options) {
         EXSEED_WATCH: _env.watch,
         EXSEED_INIT: _env.init,
       },
-      ignore: files.nodemonRestartIgnore,
+      ignore: _files.nodemonRestartIgnore,
     })
     .on('start', () => {
       if (!started) {
