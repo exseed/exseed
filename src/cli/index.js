@@ -4,6 +4,7 @@ import path from 'path';
 import fs from 'fs';
 import program from 'commander';
 import pkg from '../../package.json';
+import { getEnv } from '../share/env';
 
 import gulp from 'gulp';
 import gulpLogEvents from './gulpLogEvents';
@@ -28,37 +29,18 @@ const registerTasks = (options) => {
    * Prepare env parameters
    */
 
-  const env = {
-    d: options.development,
-    t: options.test,
-    p: options.production,
-  };
-
-  // give default environment
-  if (!env.d && !env.t && !env.p) {
-    env.d = true;
+  let _env = getEnv(options);
+  if (_env.errors) {
+    if (_env.errors.ERR_NO_ENV) {
+      gutil.log('using `development` environment');
+    } else if (_env.errors.ERR_MULTIPLE_ENV) {
+      gutil.log(gutil.colors.red(
+        '-d, -t and -p switches cannot be used in parallel'));
+      process.exit(1);
+    }
   }
 
-  // check correctness
-  if (!((env.d && !env.t && !env.p) ||
-        (!env.d && env.t && !env.p) ||
-        (!env.d && !env.t && env.p))) {
-    gutil.log(gutil.colors.red(
-      '-d, -t and -p switches cannot be used in parallel'));
-    return;
-  }
-
-  const NODE_ENV = (
-    env.d? 'development':
-    env.t? 'test':
-           'production');
-
-  const dest = (
-    env.d? 'debug':
-    env.t? 'test':
-           'release');
-
-  let appProcess;
+  let _appProcess;
 
   /**
    * Specify gulp tasks
@@ -79,19 +61,19 @@ const registerTasks = (options) => {
       'gulpfile.js',
       'node_modules/**/*',
       'src/**/*',
-      'build/debug/public/js/*/bundle.js',
+      'build/debug/*/public/js/bundle.js',
       'build/debug/public/js/common.js',
       'build/debug/*/flux/**/*',
-      'build/release/public/js/*/bundle.js',
+      'build/release/*/public/js/bundle.js',
       'build/release/public/js/common.js',
-      'build/test/public/js/*/bundle.js',
+      'build/test/*/public/js/bundle.js',
       'build/test/public/js/common.js',
     ],
   };
 
   // watching source files
   gulp.task('watch', () => {
-    if (options.watch) {
+    if (_env.watch) {
       gulp.watch(files.scripts, ['build']);
       gulp.watch(files.flux, ['webpack']);
       gulp.watch(files.statics, ['copy']);
@@ -102,8 +84,8 @@ const registerTasks = (options) => {
   gulp.task('build', () => {
     return gulp
       .src(files.scripts)
-      .pipe(gulpif(options.watch, changed('./build/' + dest)))
-      .pipe(gulpif(env.d, sourcemaps.init()))
+      .pipe(gulpif(_env.watch, changed(_env.dir.projectTarget)))
+      .pipe(gulpif(_env.env.development, sourcemaps.init()))
         .pipe(babel({
           presets: [
             'es2015',
@@ -116,27 +98,27 @@ const registerTasks = (options) => {
           title: 'babel fail',
           message: '<%= error.message %>',
         }))
-      .pipe(gulpif(env.d, sourcemaps.write({
+      .pipe(gulpif(_env.env.development, sourcemaps.write({
         includeContent: false,
         sourceRoot: (file) => {
           return path.join(process.cwd(), 'src');
         },
       })))
-      .pipe(gulp.dest('./build/' + dest));
+      .pipe(gulp.dest(_env.dir.projectTarget));
   });
 
   gulp.task('webpack', ['build'], (cb) => {
     // to require `app.js` in the correct environment
-    process.env.NODE_ENV = NODE_ENV;
-    const config = require(`../webpack/webpack.config.${NODE_ENV}`);
+    process.env.NODE_ENV = _env.NODE_ENV;
+    const config = require(`../webpack/webpack.config.${_env.NODE_ENV}`);
     const exseed = require(path.join(
-      process.cwd(), 'build', dest, 'app.js')).default;
+      _env.dir.projectTarget, 'app.js')).default;
     let _appInstances = exseed.getAppInstances();
     let appArray = [];
     for (let appName in _appInstances) {
       let exseedApp = _appInstances[appName];
       const srcPath = path.join(
-        process.cwd(), 'src', exseedApp.dir, 'flux/boot.js');
+        _env.dir.projectSrc, exseedApp.dir, 'flux/boot.js');
       if (fs.existsSync(srcPath)) {
         appArray.push(appName);
         config.entry[exseedApp.dir] = [
@@ -145,7 +127,7 @@ const registerTasks = (options) => {
       }
     }
 
-    config.output.path = path.join(process.cwd(), 'build', dest);
+    config.output.path = _env.dir.projectTarget;
     config.plugins.push(
       new webpack.optimize.CommonsChunkPlugin('public/js/common.js', appArray),
     );
@@ -162,34 +144,34 @@ const registerTasks = (options) => {
   gulp.task('copy', function() {
     return gulp
       .src(files.statics)
-      .pipe(gulpif(options.watch, changed('./build/' + dest)))
-      .pipe(gulp.dest('./build/' + dest));
+      .pipe(gulpif(_env.watch, changed(_env.dir.projectTarget)))
+      .pipe(gulp.dest(_env.dir.projectTarget));
   });
 
   gulp.task('exec', ['build', 'webpack', 'copy'], (cb) => {
     const exec = require('child_process').exec;
-    appProcess = exec(`node build/${dest}/server.js`, {
+    _appProcess = exec(`node ${_env.dir.projectTarget}/server.js`, {
       env: {
         // inherit all parent environment variables
         // to run `node` binary with $PATH
         // ref: https://github.com/travis-ci/travis-ci/issues/3894
         ...process.env,
-        NODE_ENV: NODE_ENV,
-        EXSEED_INIT: options.init,
+        NODE_ENV: _env.NODE_ENV,
+        EXSEED_INIT: _env.init,
       },
     });
 
     // show outputs in realtime
-    appProcess.stdout.on('data', (data) => {
+    _appProcess.stdout.on('data', (data) => {
       console.log(data);
     });
 
-    appProcess.stderr.on('data', (data) => {
+    _appProcess.stderr.on('data', (data) => {
       console.log(data);
     });
 
-    if (!env.t) {
-      appProcess.on('close', (code) => {
+    if (!_env.env.test) {
+      _appProcess.on('close', (code) => {
         cb();
       });
     } else {
@@ -201,13 +183,13 @@ const registerTasks = (options) => {
     let started = false;
 
     return nodemon({
-      script: `build/${dest}/server.js`,
-      watch: [`build/${dest}/**/*.js`],
+      script: `${_env.dir.projectTarget}/server.js`,
+      watch: [`${_env.dir.projectTarget}/**/*.js`],
       ext: 'js',
       env: {
-        NODE_ENV: NODE_ENV,
-        EXSEED_WATCH: options.watch,
-        EXSEED_INIT: options.init,
+        NODE_ENV: _env.NODE_ENV,
+        EXSEED_WATCH: _env.watch,
+        EXSEED_INIT: _env.init,
       },
       ignore: files.nodemonRestartIgnore,
     })
@@ -248,11 +230,11 @@ const registerTasks = (options) => {
         .src(specSrc, { read: false })
         .pipe(mocha({ reporter: 'spec' }))
         .once('error', () => {
-          appProcess.kill('SIGINT');
+          _appProcess.kill('SIGINT');
           process.exit(1);
         })
         .once('end', () => {
-          appProcess.kill('SIGINT');
+          _appProcess.kill('SIGINT');
           process.exit();
         });
       cb();

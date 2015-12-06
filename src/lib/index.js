@@ -6,26 +6,14 @@ import Waterline from 'waterline';
 import assign from 'object-assign';
 import React from 'react';
 import ReactDOMServer from 'react-dom/server';
-
-/**
- * Environment related variables
- */
-
-export const ENV = process.env.NODE_ENV || 'development';
-export const env = {
-  development: ENV === 'development',
-  test: ENV === 'test',
-  production: ENV === 'production',
-};
+import { getEnv } from '../share/env';
 
 /**
  * Private global variables
  */
 
-const _dest = (
-  env.development? 'debug':
-  env.test?        'test':
-                   'release');
+// environment related variables
+const _env = getEnv();
 
 // registered app instances
 let _appInstances = {};
@@ -39,16 +27,11 @@ const _waterline = new Waterline();
 // the top level express app
 const _rootExpressApp = express();
 
-// exseed project directory
-const _dir = {
-  projectRoot: process.cwd(),
-  projectSrc: path.join(process.cwd(), 'src'),
-  projectTarget: path.join(process.cwd(), 'build', _dest),
-};
-
 /**
  * Exported variables and functions
  */
+
+export const env = _env;
 
 // waterline orm models
 export let models = null;
@@ -122,7 +105,7 @@ export function load(appName) {
  */
 export function registerApp(appName, appDir) {
   let AppClass = require(
-    path.join(_dir.projectTarget, appDir, 'index.js')).default;
+    path.join(_env.dir.projectTarget, appDir, 'index.js')).default;
   let newExpressApp = express();
   const appInstance = new AppClass(newExpressApp, appName, appDir);
   _appInstances[appName] = appInstance;
@@ -151,8 +134,8 @@ export function registerModel(schema) {
      *   doesn't do anything on sails lift- for use in production.
      */
     migrate: schema.migrate || (
-      env.development? 'alter':
-      env.test? 'safe':
+      _env.env.development? 'alter':
+      _env.env.test? 'safe':
       'safe'),
   });
   let collections = Waterline.Collection.extend(schema);
@@ -178,7 +161,7 @@ export function registerModel(schema) {
 export function run(customSettings, cb) {
   assign(_appSettings, customSettings);
 
-  if (process.env.EXSEED_WATCH === 'true') {
+  if (_env.watch) {
     console.log('using livereload');
 
     // dependencies for livereloading react
@@ -191,7 +174,8 @@ export function run(customSettings, cb) {
     let appArray = [];
     for (let appName in _appInstances) {
       let exseedApp = _appInstances[appName];
-      const srcPath = path.join(_dir.projectSrc, exseedApp.dir, 'flux/boot.js');
+      const srcPath = path.join(
+        _env.dir.projectSrc, exseedApp.dir, 'flux/boot.js');
       if (fs.existsSync(srcPath)) {
         appArray.push(appName);
         config.entry[appName] = [
@@ -200,7 +184,7 @@ export function run(customSettings, cb) {
         ];
       }
     }
-    config.output.path = _dir.projectTarget;
+    config.output.path = _env.dir.projectTarget;
     config.plugins.push(
       new webpack.optimize.CommonsChunkPlugin('js/common.js', appArray),
     );
@@ -214,7 +198,7 @@ export function run(customSettings, cb) {
   }
 
   // initialize ORM
-  _waterline.initialize(_appSettings.db[ENV], (err, ontology) => {
+  _waterline.initialize(_appSettings.db[_env.NODE_ENV], (err, ontology) => {
     if (err) {
       return cb(err);
     }
@@ -223,7 +207,7 @@ export function run(customSettings, cb) {
     models = ontology.collections;
 
     // initialize exseed app
-    if (process.env.EXSEED_INIT === 'true') {
+    if (_env.init) {
       for (let appName in _appInstances) {
         let exseedApp = _appInstances[appName];
         exseedApp.init(ontology.collections);
@@ -233,13 +217,13 @@ export function run(customSettings, cb) {
 
     // serve global static files
     _rootExpressApp.use(express.static(
-      path.join(_dir.projectTarget, 'public')));
+      path.join(_env.dir.projectTarget, 'public')));
 
     // serve app's static files
     for (let appName in _appInstances) {
       let exseedApp = _appInstances[appName];
       _rootExpressApp.use('/' + appName, express.static(
-        path.join(_dir.projectTarget, exseedApp.dir, 'public')));
+        path.join(_env.dir.projectTarget, exseedApp.dir, 'public')));
     }
 
     // setup exseed app's routing rules
@@ -253,13 +237,13 @@ export function run(customSettings, cb) {
       let exseedApp = _appInstances[appName];
       let app = exseedApp.expressApp;
       const routesPath = path.join(
-        _dir.projectTarget, exseedApp.dir, 'routes.js');
+        _env.dir.projectTarget, exseedApp.dir, 'routes.js');
       if (fs.existsSync(routesPath)) {
         const App = require(routesPath).default;
         app.get('/*', (req, res, next) => {
           try {
             const Helmet = require(
-              path.join(_dir.projectRoot, 'node_modules/react-helmet'));
+              path.join(_env.dir.projectRoot, 'node_modules/react-helmet'));
             // the order of generating `html` and `head` cannot be exchanged
             // it's fucking weird...
             const html = ReactDOMServer.renderToString(
@@ -269,7 +253,7 @@ export function run(customSettings, cb) {
             res.send(
               '<!DOCTYPE html>' +
               '<head>' +
-                `<title>${head.title.toString()}</title>` +
+                head.title.toString() +
                 head.meta.toString() +
                 head.link.toString() +
               '</head>' +
@@ -309,7 +293,7 @@ export function run(customSettings, cb) {
     });
 
     // launch server
-    const port = process.env.PORT || _appSettings.server.port[ENV];
+    const port = process.env.PORT || _appSettings.server.port[_env.NODE_ENV];
     _rootExpressApp.httpServer = http
       .createServer(_rootExpressApp)
       .listen(port, () => {
