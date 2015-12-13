@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router';
 
 export default class Navigator extends React.Component {
   render() {
@@ -25,8 +26,8 @@ export default class Navigator extends React.Component {
           className="collapse navbar-collapse"
           id="bs-example-navbar-collapse-1">
           <ul className="nav navbar-nav">
-            <li><a href="/">Home</a></li>
-            <li><a href="/about">About</a></li>
+            <li><Link to="/">Home</Link></li>
+            <li><Link to="/about">About</Link></li>
           </ul>
 
           <ul className="nav navbar-nav navbar-right">
@@ -41,12 +42,12 @@ export default class Navigator extends React.Component {
                 User <span className="caret"></span>
               </a>
               <ul className="dropdown-menu">
-                <li><a href="/user/register">Register</a></li>
+                <li><Link to="/user/register">Register</Link></li>
                 <li role="separator" className="divider"></li>
-                <li><a href="/user/profile">Profile</a></li>
-                <li><a href="/user/login">Login</a></li>
+                <li><Link to="/user/profile">Profile</Link></li>
+                <li><Link to="/user/login">Login</Link></li>
                 <li role="separator" className="divider"></li>
-                <li><a href="/user/logout">Logout</a></li>
+                <li><Link to="/user/logout">Logout</Link></li>
               </ul>
             </li>
           </ul>

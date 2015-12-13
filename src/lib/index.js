@@ -250,47 +250,60 @@ export function run(customSettings, cb) {
     });
 
     // render full page view
-    // for (let appName in _appInstances) {
-    //   let exseedApp = _appInstances[appName];
+    // v1.0.x -> RoutingContext
+    // v1.1.0 -> RouterContext
+    // ref: https://github.com/rackt/react-router/blob/master/CHANGES.md
+    let { match, RoutingContext } = require(path.join(_env.dir.projectRoot, 'node_modules/react-router'));
     iterateApps((appName, exseedApp) => {
       let app = exseedApp.expressApp;
       const routesPath = path.join(
         _env.dir.projectTarget, exseedApp.dir, 'routes.js');
       if (fs.existsSync(routesPath)) {
-        const App = require(routesPath).default;
+        const routes = require(routesPath).default;
         app.get('/*', (req, res, next) => {
-          try {
-            const Helmet = require(
-              path.join(_env.dir.projectRoot, 'node_modules/react-helmet'));
-            // the order of generating `html` and `head` cannot be exchanged
-            // it's fucking weird...
-            const html = ReactDOMServer.renderToString(
-              <App path={req.path} />);
-            const head = Helmet.rewind();
+          match({
+            routes,
+            location: req.url,
+          }, (err, redirectLocation, renderProps) => {
+            if (err) {
+              res.status(500).send(err.message);
+            } else if (redirectLocation) {
+              res.redirect(
+                302, redirectLocation.pathname + redirectLocation.search);
+            } else if (renderProps) {
+              // ref: https://github.com/rackt/react-router/issues/1414
+              const notFound = renderProps.components
+                .filter(component => component.isNotFound)
+                .length > 0;
+              if (notFound) {
+                next();
+              } else {
+                const Helmet = require(
+                  path.join(_env.dir.projectRoot, 'node_modules/react-helmet'));
+                // the order of generating `html` and `head` cannot be exchanged
+                // it's fucking weird...
+                const component = <RoutingContext {...renderProps} />;
+                const html = ReactDOMServer.renderToString(component);
+                const head = Helmet.rewind();
 
-            res.send(
-              '<!DOCTYPE html>' +
-              '<head>' +
-                head.title.toString() +
-                head.meta.toString() +
-                head.link.toString() +
-              '</head>' +
-              '<body>' +
-                '<div id="exseed_root">' +
-                  html +
-                '</div>' +
-              '</body>'
-            );
-          } catch (err) {
-            if (err.message !== 'React-router-component: ' +
-                                'No route matched! ' +
-                                'Did you define a NotFound route?') {
-              next(err);
+                res.status(200).send(
+                  '<!DOCTYPE html>' +
+                  '<head>' +
+                    head.title.toString() +
+                    head.meta.toString() +
+                    head.link.toString() +
+                  '</head>' +
+                  '<body>' +
+                    '<div id="exseed_root">' +
+                      html +
+                    '</div>' +
+                  '</body>'
+                );
+              }
             } else {
-              // no routes matched in currently iterated app
               next();
             }
-          }
+          });
         });
       }
     });
