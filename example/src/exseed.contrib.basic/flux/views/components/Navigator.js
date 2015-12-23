@@ -1,8 +1,13 @@
 import React from 'react';
-import { Link } from 'react-router';
+import { createLinkOf }
+from '../../../../exseed.core/flux/views/components/AppLink';
 
 export default class Navigator extends React.Component {
   render() {
+    const EXSEED_APP_NAME = (
+      this.props.route? this.props.route.EXSEED_APP_NAME: '');
+    const Link = createLinkOf(EXSEED_APP_NAME);
+
     return <nav className="navbar navbar-default navbar-static-top">
       <div className="container">
         <div className="navbar-header">
@@ -26,8 +31,9 @@ export default class Navigator extends React.Component {
           className="collapse navbar-collapse"
           id="bs-example-navbar-collapse-1">
           <ul className="nav navbar-nav">
-            <li><Link to="/">Home</Link></li>
-            <li><Link to="/about">About</Link></li>
+            <li><Link app="basic" to="/">Home</Link></li>
+            <li><Link app="basic" to="/about">About</Link></li>
+            <li><Link app="basic" to="/doesNotExist">Not Exist</Link></li>
           </ul>
 
           <ul className="nav navbar-nav navbar-right">
@@ -42,12 +48,14 @@ export default class Navigator extends React.Component {
                 User <span className="caret"></span>
               </a>
               <ul className="dropdown-menu">
-                <li><Link to="/user/register">Register</Link></li>
+                <li>
+                  <Link app="user" to="/user/register">Register</Link>
+                </li>
                 <li role="separator" className="divider"></li>
-                <li><Link to="/user/profile">Profile</Link></li>
-                <li><Link to="/user/login">Login</Link></li>
+                <li><Link app="user" to="/user/profile">Profile</Link></li>
+                <li><Link app="user" to="/user/login">Login</Link></li>
                 <li role="separator" className="divider"></li>
-                <li><Link to="/user/logout">Logout</Link></li>
+                <li><Link app="user" to="/user/logout">Logout</Link></li>
               </ul>
             </li>
           </ul>

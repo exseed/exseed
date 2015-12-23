@@ -31,6 +31,11 @@ const _rootExpressApp = express();
  * Private global functions
  */
 
+// v1.0.x -> RoutingContext
+// v1.1.0 -> RouterContext
+// ref: https://github.com/rackt/react-router/blob/master/CHANGES.md
+let { match, RoutingContext } = require(path.join(_env.dir.projectRoot, 'node_modules/react-router'));
+
 /**
  * @callback iterateCallback
  * @param {string} appName - Current app name
@@ -47,6 +52,53 @@ let iterateApps = (cb) => {
     cb(appName, exseedApp);
   }
 };
+
+export function renderComponent(component) {
+  const Helmet = require(
+    path.join(_env.dir.projectRoot, 'node_modules/react-helmet'));
+  // the order of generating `html` and `head` cannot be exchanged
+  // it's fucking weird...
+  const html = ReactDOMServer.renderToString(component);
+  const head = Helmet.rewind();
+  const title = head? head.title.toString(): '';
+  const meta = head? head.meta.toString(): '';
+  const link = head? head.link.toString(): '';
+  return (
+    '<!DOCTYPE html>' +
+    '<head>' +
+      title +
+      meta +
+      link +
+    '</head>' +
+    '<body>' +
+      '<div id="exseed_root">' +
+        html +
+      '</div>' +
+    '</body>'
+  );
+};
+
+/**
+ *
+ */
+export function renderPath(appName, url, cb) {
+  const exseedApp = _appInstances[appName];
+  const routesPath = path.join(
+    _env.dir.projectTarget, exseedApp.dir, 'routes.js');
+  const routes = require(routesPath).default;
+  match({
+    routes,
+    location: url,
+  }, (err, redirectLocation, renderProps) => {
+    if (renderProps) {
+      const component = <RoutingContext {...renderProps} />;
+      const html = renderComponent(component);
+      cb(err, html);
+    } else {
+      cb(err, null);
+    }
+  });
+}
 
 /**
  * Exported variables and functions
@@ -250,10 +302,6 @@ export function run(customSettings, cb) {
     });
 
     // render full page view
-    // v1.0.x -> RoutingContext
-    // v1.1.0 -> RouterContext
-    // ref: https://github.com/rackt/react-router/blob/master/CHANGES.md
-    let { match, RoutingContext } = require(path.join(_env.dir.projectRoot, 'node_modules/react-router'));
     iterateApps((appName, exseedApp) => {
       let app = exseedApp.expressApp;
       const routesPath = path.join(
@@ -278,27 +326,8 @@ export function run(customSettings, cb) {
               if (notFound) {
                 next();
               } else {
-                const Helmet = require(
-                  path.join(_env.dir.projectRoot, 'node_modules/react-helmet'));
-                // the order of generating `html` and `head` cannot be exchanged
-                // it's fucking weird...
                 const component = <RoutingContext {...renderProps} />;
-                const html = ReactDOMServer.renderToString(component);
-                const head = Helmet.rewind();
-
-                res.status(200).send(
-                  '<!DOCTYPE html>' +
-                  '<head>' +
-                    head.title.toString() +
-                    head.meta.toString() +
-                    head.link.toString() +
-                  '</head>' +
-                  '<body>' +
-                    '<div id="exseed_root">' +
-                      html +
-                    '</div>' +
-                  '</body>'
-                );
+                res.status(200).send(renderComponent(component));
               }
             } else {
               next();

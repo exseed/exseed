@@ -34,7 +34,8 @@ export default class AppLayout extends React.Component {
         scripts={scripts}
         styles={styles} >
         <Navigator
-          title="Exseed" />
+          title="Exseed"
+          {...this.props} />
         {this.props.children}
       </BaseLayout>
     );
