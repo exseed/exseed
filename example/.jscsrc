@@ -13,5 +13,6 @@
   },
   "requireCapitalizedComments": null,
   "requireSemicolons": true,
-  "validateQuoteMarks": null
+  "validateQuoteMarks": null,
+  "requireEarlyReturn": false
 }
