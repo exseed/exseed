@@ -8,25 +8,18 @@ var babelSettings = {
     'stage-1',
     'react',
   ],
-
-  // `react-transform` doesn't support babel 6.x yet,
-  // so now the livereload is not working
-  // ref: https://github.com/gaearon/react-transform-boilerplate
-
-  // plugins: [
-  //   [require('babel-plugin-react-transform'), {
-  //     transforms: [
-  //       {
-  //         transform: 'react-transform-hmr',
-  //         imports: ['react'],
-  //         locals: ['module'],
-  //       }, {
-  //         transform: 'react-transform-catch-errors',
-  //         imports: ['react', 'redbox-react'],
-  //       },
-  //     ],
-  //   },],
-  // ],
+  plugins: [
+    ['react-transform', {
+      transforms: [{
+        transform: 'react-transform-hmr',
+        imports: ['react'],
+        locals: ['module'],
+      }, {
+        transform: "react-transform-catch-errors",
+        imports: ["react", "redbox-react"],
+      },],
+    },],
+  ],
 };
 
 module.exports = {
