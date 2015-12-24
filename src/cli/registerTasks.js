@@ -231,12 +231,18 @@ export function registerTasks(options) {
       gulp
         .src(specSrc, { read: false })
         .pipe(mocha({ reporter: 'spec' }))
-        .once('error', () => {
-          _appProcess.kill('SIGINT');
+        .once('error', notify.onError({
+          title: 'mocha test fail',
+          subtitle: '<%= error.name %>: <%= error.message %>',
+          message: '<%= error.stack %>',
+        }, function(error, response) {
+          // _appProcess.kill('SIGINT');
+          _appProcess.kill();
           process.exit(1);
-        })
+        }))
         .once('end', () => {
-          _appProcess.kill('SIGINT');
+          // _appProcess.kill('SIGINT');
+          _appProcess.kill();
           process.exit();
         });
       cb();
