@@ -38,6 +38,10 @@ A highly extensible nodejs framework
 | Modern Syntax | ✔      |         | ✔      |        |        |
 | Isomorphic    | ✔      |         |        |        |        |
 
+## Docs
+
+Please visit our [github page](http://exseed.github.io/docs/exseed/0.1.14)
+
 ## Example
 
 TBD

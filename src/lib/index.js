@@ -258,7 +258,7 @@ export function run(customSettings, cb) {
     });
     config.output.path = _env.dir.projectTarget;
     config.plugins.push(
-      new webpack.optimize.CommonsChunkPlugin('js/common.js', appArray),
+      new webpack.optimize.CommonsChunkPlugin('js/common.js', appArray)
     );
 
     let compiler = webpack(config);
