@@ -22,7 +22,7 @@ A highly extensible nodejs framework
 | Automation | [Gulp](https://github.com/gulpjs/gulp) |
 | Backend    | [Node](https://nodejs.org/en/), [Express(>=4.0.0)](http://expressjs.com/) |
 | ORM        | [Waterline](https://github.com/balderdashy/waterline) |
-| Frontend   | [React](https://facebook.github.io/react/), [Redux](https://github.com/rackt/redux)/[Alt](http://alt.js.org/), [React-Router-Component](https://github.com/STRML/react-router-component) |
+| Frontend   | [React](https://facebook.github.io/react/), [Redux](https://github.com/rackt/redux)/[Alt](http://alt.js.org/), [React-Router](https://github.com/rackt/react-router) |
 | Testing    | [Mocha](https://mochajs.org/) |
 | CI         | [Travis CI](https://travis-ci.org/) |
 
