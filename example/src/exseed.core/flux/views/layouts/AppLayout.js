@@ -1,6 +1,5 @@
 import React from 'react';
-import BaseLayout
-from '../../../../exseed.contrib.basic/flux/views/layouts/BaseLayout';
+import BaseLayout from './BaseLayout';
 import Navigator
 from '../../../../exseed.contrib.basic/flux/views/components/Navigator';
 

@@ -1,5 +1,6 @@
 import React from 'react';
-import BaseLayout from './BaseLayout';
+import BaseLayout
+from '../../../../exseed.core/flux/views/layouts/BaseLayout';
 import Navigator from '../components/Navigator';
 
 // jscs:disable

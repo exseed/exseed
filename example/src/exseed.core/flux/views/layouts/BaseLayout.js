@@ -29,8 +29,8 @@ export default class BaseLayout extends React.Component {
           },
         ]} />
       {styles}
-      {this.props.children}
       {scripts}
+      {this.props.children}
     </div>;
   }
 };
