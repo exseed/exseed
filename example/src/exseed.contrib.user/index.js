@@ -4,6 +4,8 @@ import {
   env
 } from 'exseed';
 
+import * as views from './views';
+
 class UserApp extends App {
   constructor(props) {
     super(props);
@@ -94,61 +96,10 @@ class UserApp extends App {
   }
 
   routing(app, models) {
-    app.post('/api/user/login', (req, res) => {
-      models.user
-        .authenticate(req.body)
-        .then((user) => {
-          res.send(user);
-        })
-        .catch((e) => {
-          res.send(e.message);
-        });
-    });
-    app.get('/api/user/:id', (req, res) => {
-      // deep populate user to get
-      // `user.role` and `user.role.permissions`
-      models.user
-        .findOne(req.params.id)
-        .populate('role')
-        .then((user) => {
-          let role = models.role
-            .findOne({
-              name: user.role.name,
-            })
-            .populate('permissions')
-            .then((role) => {
-              return role;
-            });
-
-          return [ user, role ];
-        })
-        .spread((user, role) => {
-          let userObj = user.toJSON();
-          let roleObj = role.toJSON();
-          userObj.permissions = roleObj.permissions;
-          res.json(userObj);
-        });
-    });
-
-    app.get('/api/role/:name', (req, res) => {
-      models.role
-        .findOne({
-          name: req.params.name,
-        })
-        .populate('users')
-        .populate('permissions')
-        .then((role) => {
-          res.json(role);
-        });
-    });
-
-    app.get('/api/permission', (req, res) => {
-      models.permission
-        .find()
-        .then((permissions) => {
-          res.json(permissions);
-        });
-    });
+    app.post('/api/user/login', views.login);
+    app.get('/api/user/:id', views.getUser);
+    app.get('/api/role/:name', views.getRole);
+    app.get('/api/permission', views.listPermissions);
   }
 
   onError(err, req, res) {
