@@ -18,6 +18,9 @@ export default class BaseLayout extends React.Component {
       return <link key={idx} rel="stylesheet" href={src}/>;
     });
 
+    // don't change the order of `{scripts}` and `{this.props.children}`
+    // since the react render root is inside the children
+    // load react scipts before the render root appears will cause error
     return <div>
       <Helmet
         title={this.props.title}
@@ -29,8 +32,8 @@ export default class BaseLayout extends React.Component {
           },
         ]} />
       {styles}
-      {scripts}
       {this.props.children}
+      {scripts}
     </div>;
   }
 };
