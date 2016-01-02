@@ -25,19 +25,27 @@ var env = {
   p: program.env === 'production',
 };
 
+var files = {
+  library: [
+    './src/**/*.js',
+    '!./src/templates/**/*.js',
+  ],
+  template: './src/templates/**/*.js',
+};
+
 // watching source files
 gulp.task('watch', function() {
   if (program.watch) {
-    return gulp
-      .watch('./src/**/*.js', ['build']);
+    gulp.watch(files.library, ['build:library']);
+    gulp.watch(files.template, ['build:template']);
   }
 });
 
 // build source files
-gulp.task('build', function() {
+gulp.task('build:library', function() {
   return gulp
-    .src('./src/**/*.js')
-    .pipe(gulpif(program.watch, changed('./')))
+    .src(files.library)
+    .pipe(gulpif(program.watch, changed('./dist')))
     .pipe(gulpif(env.d, sourcemaps.init()))
       .pipe(babel({
         presets: [
@@ -60,7 +68,33 @@ gulp.task('build', function() {
     .pipe(gulp.dest('./dist'));
 });
 
+gulp.task('build:template', function() {
+  return gulp
+    .src(files.template)
+    .pipe(gulpif(program.watch, changed('./core')))
+    .pipe(gulpif(env.d, sourcemaps.init()))
+      .pipe(babel({
+        presets: [
+          'es2015',
+          'stage-0',
+          'stage-1',
+          'react',
+        ],
+      }))
+      .on('error', notify.onError({
+        title: 'babel fail',
+        message: '<%= error.message %>',
+      }))
+    .pipe(gulpif(env.d, sourcemaps.write({
+      includeContent: false,
+      sourceRoot: function(file) {
+        return path.resolve(__dirname, 'src/templates');
+      },
+    })))
+    .pipe(gulp.dest('./core'));
+});
+
 // run gulp tasks
 gulp.task('default', function() {
-  gulp.start('build', 'watch');
+  gulp.start('build:library', 'build:template', 'watch');
 });
