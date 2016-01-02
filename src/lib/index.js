@@ -124,14 +124,14 @@ export class App {
    * and mount it onto the top level express app
    * @constructs App
    */
-  constructor(app, name, dir) {
+  constructor(props) {
     /**
      * The express app
      * @member App#expressApp
      */
-    this.expressApp = app;
-    this.name = name;
-    this.dir = dir;
+    this.expressApp = props.app;
+    this.name = props.name;
+    this.dir = props.dir;
     _rootExpressApp.use('/', this.expressApp);
   }
 
@@ -180,7 +180,11 @@ export function registerApp(appName, appDir) {
   let AppClass = require(
     path.join(_env.dir.projectTarget, appDir, 'index.js')).default;
   let newExpressApp = express();
-  const appInstance = new AppClass(newExpressApp, appName, appDir);
+  const appInstance = new AppClass({
+    app: newExpressApp,
+    name: appName,
+    dir: appDir,
+  });
   _appInstances[appName] = appInstance;
   return appInstance;
 }
@@ -321,7 +325,7 @@ export function run(customSettings, cb) {
             } else if (renderProps) {
               // ref: https://github.com/rackt/react-router/issues/1414
               const notFound = renderProps.components
-                .filter(component => component.isNotFound)
+                .filter(component => component && component.isNotFound)
                 .length > 0;
               if (notFound) {
                 next();

@@ -7,8 +7,8 @@ import {
 import NotFoundPage from './flux/views/pages/NotFoundPage';
 
 class CoreApp extends App {
-  constructor(app, name, dir) {
-    super(app, name, dir);
+  constructor(props) {
+    super(props);
   }
 
   onError(err, req, res) {
