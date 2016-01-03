@@ -5,13 +5,18 @@ import {
 } from 'exseed';
 
 import * as views from './views';
+import tokenParser from './middlewares/tokenParser';
 
 class UserApp extends App {
   constructor(props) {
     super(props);
+    const { app } = props;
+
     registerModel(require('./models/permission').default);
     registerModel(require('./models/role').default);
     registerModel(require('./models/user').default);
+
+    app.use(tokenParser());
   }
 
   init(models) {
@@ -109,6 +114,32 @@ class UserApp extends App {
   }
 
   onError(err, req, res) {
+    switch (err.name) {
+      case 'TokenExpiration': {
+        res
+          .status(400)
+          .json({
+            errors: [{
+              title: 'token expired',
+              detail: err.msg,
+            },],
+          });
+        break;
+      }
+      case 'TokenInvalid': {
+        // clear the broken token
+        res.clearCookie('access_token');
+        res
+          .status(400)
+          .json({
+            errors: [{
+              title: 'token invalid',
+              detail: err.msg,
+            },],
+          });
+        break;
+      }
+    }
   }
 };
 
