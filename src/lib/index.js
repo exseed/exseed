@@ -31,10 +31,7 @@ const _rootExpressApp = express();
  * Private global functions
  */
 
-// v1.0.x -> RoutingContext
-// v1.1.0 -> RouterContext
-// ref: https://github.com/rackt/react-router/blob/master/CHANGES.md
-let { match, RoutingContext } = require(path.join(_env.dir.projectRoot, 'node_modules/react-router'));
+let { match, RouterContext } = require(path.join(_env.dir.projectRoot, 'node_modules/react-router'));
 
 /**
  * @callback iterateCallback
@@ -91,7 +88,7 @@ export function renderPath(appName, url, cb) {
     location: url,
   }, (err, redirectLocation, renderProps) => {
     if (renderProps) {
-      const component = <RoutingContext {...renderProps} />;
+      const component = <RouterContext {...renderProps} />;
       const html = renderComponent(component);
       cb(err, html);
     } else {
@@ -347,7 +344,7 @@ export function run(customSettings, cb) {
               if (notFound) {
                 next();
               } else {
-                const component = <RoutingContext {...renderProps} />;
+                const component = <RouterContext {...renderProps} />;
                 res.status(200).send(renderComponent(component));
               }
             } else {
