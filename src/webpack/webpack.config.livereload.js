@@ -2,13 +2,16 @@ var webpack = require('webpack');
 
 var babelSettings = {
   cacheDirectory: true,
+  plugins: [
+    'transform-decorators-legacy',
+  ],
   presets: [
-    'es2015',
     'stage-0',
-    'stage-1',
+    'es2015',
     'react',
   ],
   plugins: [
+    'transform-decorators-legacy',
     ['react-transform', {
       transforms: [{
         transform: 'react-transform-hmr',

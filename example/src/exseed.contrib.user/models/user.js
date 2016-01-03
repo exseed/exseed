@@ -1,4 +1,7 @@
 import { models } from 'exseed';
+import jwt from 'jwt-simple';
+import moment from 'moment';
+import settings from '../settings';
 
 export default {
   identity: 'user',
@@ -27,12 +30,30 @@ export default {
       delete obj.password;
       return obj;
     },
+
+    getBearerToken() {
+      const token = jwt.encode({
+        user: {
+          id: this.id,
+          name: this.name,
+          username: this.username,
+        },
+        expiration: moment()
+          .add(
+            settings.bearerToken.expiration.split(' ')[0],
+            settings.bearerToken.expiration.split(' ')[1]
+          )
+          .valueOf(),
+      }, settings.bearerToken.secret);
+
+      return token;
+    },
   },
 
   authenticate(user) {
     return models.user
       .findOne({
-        email: user.email,
+        username: user.username,
         password: user.password,
       })
       .then((user) => {

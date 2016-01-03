@@ -39,6 +39,7 @@ class UserApp extends App {
           .create({
             email: 'root@exseed.org',
             name: 'root',
+            username: 'root',
             password: 'root',
             role: role.id,
           });
@@ -55,6 +56,7 @@ class UserApp extends App {
           .create({
             email: 'admin@exseed.org',
             name: 'admin',
+            username: 'admin',
             password: 'admin',
             role: role.id,
           });
@@ -71,6 +73,7 @@ class UserApp extends App {
           .create({
             email: 'user@exseed.org',
             name: 'user',
+            username: 'user',
             password: 'user',
             role: role.id,
           });
@@ -97,6 +100,7 @@ class UserApp extends App {
 
   routing(app, models) {
     app.post('/api/user/login', views.login);
+    app.get('/api/user/logout', views.logout);
     app.get('/api/user/:id', views.getUser);
     app.get('/api/role/:name', views.getRole);
     app.get('/api/permission', views.listPermissions);

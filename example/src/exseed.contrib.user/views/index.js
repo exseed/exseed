@@ -4,11 +4,35 @@ export function login(req, res) {
   models.user
     .authenticate(req.body)
     .then((user) => {
-      res.send(user);
+      // pass
+      const bearerToken = user.getBearerToken();
+      res.cookie('access_token', bearerToken);
+      res.json({
+        data: {
+          bearerToken: bearerToken,
+          user: user,
+        },
+        errors: [],
+      });
     })
     .catch((e) => {
-      res.send(e.message);
+      // reject
+      res.json({
+        errors: [
+          {
+            title: 'cannot login',
+            detail: 'either the username or the password is wrong',
+          },
+        ],
+      });
     });
+};
+
+export function logout(req, res) {
+  res.clearCookie('access_token');
+  res.json({
+    errors: [],
+  });
 };
 
 export function getUser(req, res) {

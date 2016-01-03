@@ -89,10 +89,12 @@ export function registerTasks(options) {
       .pipe(gulpif(_env.watch, changed(_env.dir.projectTarget)))
       .pipe(gulpif(_env.env.development, sourcemaps.init()))
         .pipe(babel({
+          plugins: [
+            'transform-decorators-legacy',
+          ],
           presets: [
-            'es2015',
             'stage-0',
-            'stage-1',
+            'es2015',
             'react',
           ],
         }))
