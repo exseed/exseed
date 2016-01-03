@@ -1,5 +1,4 @@
 import React from 'react';
-import AppLayout from '../layouts/AppLayout';
 
 export default class AboutPage extends React.Component {
   render() {

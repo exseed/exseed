@@ -4,8 +4,6 @@ import {
   renderPath
 } from 'exseed';
 
-import NotFoundPage from './flux/views/pages/NotFoundPage';
-
 class CoreApp extends App {
   constructor(props) {
     super(props);

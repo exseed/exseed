@@ -1,5 +1,4 @@
 import React from 'react';
-import AppLayout from '../layouts/AppLayout';
 
 export default class HomePage extends React.Component {
   handleClick() {
