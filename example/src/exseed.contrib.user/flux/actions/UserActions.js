@@ -16,7 +16,7 @@ class UserActions {
   register(input) {
     return apiRequest({
       method: 'POST',
-      url: '/api/users',
+      url: '/api/user',
       data: input,
       succ: (res) => {
         this.actions.registerSucc(res);

@@ -35,6 +35,42 @@ export function logout(req, res) {
   });
 };
 
+export function listUser(req, res) {
+  models.user
+    .find()
+    .then((users) => {
+      res.json({
+        users: users,
+        errors: [],
+      });
+    });
+};
+
+export function createUser(req, res) {
+  models.user
+    .create(req.body)
+    .then((newUser) => {
+      res.json({
+        user: newUser,
+        errors: [],
+      });
+    })
+    .catch((err) => {
+      if (err.code === 'E_VALIDATION') {
+        res
+          .status(err.status)
+          .json({
+            errors: [{
+              title: 'fail to register',
+              detail: 'the username is already used',
+            },],
+          });
+      } else {
+        throw new Error('Unknown error');
+      }
+    });
+};
+
 export function getUser(req, res) {
   // deep populate user to get
   // `user.role` and `user.role.permissions`

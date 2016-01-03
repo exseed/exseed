@@ -8,7 +8,12 @@ export default {
   attributes: {
     email: {
       type: 'string',
+    },
+
+    username: {
+      type: 'string',
       required: true,
+      unique: true,
     },
 
     name: {
@@ -65,15 +70,17 @@ export default {
       });
   },
 
-  // beforeCreate(values, next) {
-  //   // if no role is specified, set `user` as default role
-  //   if (!values.role) {
-  //     exseed.models.role
-  //       .find({ name: 'user' })
-  //       .then((role) => {
-  //         values.role = role.id;
-  //         next();
-  //       });
-  //   }
-  // },
+  beforeCreate(values, next) {
+    // if no role is specified, set `user` as default role
+    if (!values.role) {
+      models.role
+        .findOne({
+          name: 'user',
+        })
+        .then((role) => {
+          values.role = role.id;
+          next();
+        });
+    }
+  },
 };
