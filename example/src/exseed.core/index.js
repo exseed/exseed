@@ -19,15 +19,15 @@ class CoreApp extends App {
         });
         break;
       }
-      default: {
-        console.log('==== Uncaught Exception ====');
-        console.log(err.stack);
-        console.log('============================');
-        res.status(err.status || 500);
-        res.send('server error');
-        break;
-      }
     }
+  }
+
+  onErrorEnd(err, req, res) {
+    console.log('==== Uncaught Exception ====');
+    console.log(err.stack);
+    console.log('============================');
+    res.status(err.status || 500);
+    res.send('server error');
   }
 };
 

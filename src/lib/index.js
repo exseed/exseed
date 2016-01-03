@@ -144,6 +144,9 @@ export class App {
   onError(err, req, res) {
   }
 
+  onErrorEnd(err, req, res) {
+  }
+
   getModules() {
     return {};
   }
@@ -351,6 +354,9 @@ export function run(customSettings, cb) {
       if (err) {
         iterateApps((appName, exseedApp) => {
           exseedApp.onError(err, req, res);
+        });
+        iterateApps((appName, exseedApp) => {
+          exseedApp.onErrorEnd(err, req, res);
         });
       }
     });
