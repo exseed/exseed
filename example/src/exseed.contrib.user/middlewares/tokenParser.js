@@ -42,28 +42,28 @@ export default (opts) => {
 
     // token exist, parse it
     if (bearerToken) {
+      let decoded = {};
 
       // well-formed token
       try {
-        const decoded = jwt.decode(
+        decoded = jwt.decode(
           bearerToken,
           settings.bearerToken.secret
         );
-
-        // token expired
-        if (decoded.expiration <= Date.now()) {
-          throw new errors.TokenExpiration();
-
-        // token does not expire
-        } else {
-          req.token = bearerToken;
-          req.user = decoded.user;
-          next();
-        }
-
       // malformed token
       } catch (err) {
         throw new errors.TokenInvalid();
+      }
+
+      // token expired
+      if (decoded.expiration <= Date.now()) {
+        throw new errors.TokenExpiration();
+
+      // token does not expire
+      } else {
+        req.token = bearerToken;
+        req.user = decoded.user;
+        next();
       }
 
     // token does not exist, pass through it

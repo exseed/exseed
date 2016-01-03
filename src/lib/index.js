@@ -293,6 +293,20 @@ export function run(customSettings, cb) {
       return;
     }
 
+    // error handling
+    _rootExpressApp.use((err, req, res, next) => {
+      if (err) {
+        iterateApps((appName, exseedApp) => {
+          exseedApp.onError(err, req, res);
+        });
+        if (!res.headersSent) {
+          iterateApps((appName, exseedApp) => {
+            exseedApp.onErrorEnd(err, req, res);
+          });
+        }
+      }
+    });
+
     // serve global static files
     _rootExpressApp.use(express.static(
       path.join(_env.dir.projectTarget, 'public')));
@@ -347,18 +361,6 @@ export function run(customSettings, cb) {
     // 404
     _rootExpressApp.use((req, res, next) => {
       next(new PageNotFound());
-    });
-
-    // error handling
-    _rootExpressApp.use((err, req, res, next) => {
-      if (err) {
-        iterateApps((appName, exseedApp) => {
-          exseedApp.onError(err, req, res);
-        });
-        iterateApps((appName, exseedApp) => {
-          exseedApp.onErrorEnd(err, req, res);
-        });
-      }
     });
 
     // launch server

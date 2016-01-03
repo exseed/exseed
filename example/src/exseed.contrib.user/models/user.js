@@ -81,6 +81,8 @@ export default {
           values.role = role.id;
           next();
         });
+    } else {
+      next();
     }
   },
 };

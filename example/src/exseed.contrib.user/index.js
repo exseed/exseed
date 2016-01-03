@@ -116,12 +116,14 @@ class UserApp extends App {
   onError(err, req, res) {
     switch (err.name) {
       case 'TokenExpiration': {
+        // clear the broken token
+        res.clearCookie('access_token');
         res
-          .status(400)
+          .status(err.status)
           .json({
             errors: [{
               title: 'token expired',
-              detail: err.msg,
+              detail: err.message,
             },],
           });
         break;
@@ -130,11 +132,11 @@ class UserApp extends App {
         // clear the broken token
         res.clearCookie('access_token');
         res
-          .status(400)
+          .status(err.status)
           .json({
             errors: [{
               title: 'token invalid',
-              detail: err.msg,
+              detail: err.message,
             },],
           });
         break;
