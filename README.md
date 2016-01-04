@@ -199,5 +199,5 @@ See the complete [todo app](https://github.com/exseed/exseed/tree/master/example
 
 ## Docs
 
-- [API Docs](http://exseed.github.io/docs/exseed/0.1.14)
+- [API Docs](http://exseed.github.io/docs/exseed/0.1.15)
 - [Developer Guide](https://github.com/exseed/exseed/blob/master/docs%2Fdeveloper%20guide.md)

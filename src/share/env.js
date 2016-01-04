@@ -1,9 +1,22 @@
 import path from 'path';
 
 /**
- * Return environment related variables,
- * for example:
- *
+ * @typedef {object} EnvInfo
+ * @property {string} NODE_ENV - current NODE_ENV
+ * @property {object} env
+ * @property {boolean} env.development - whether current running mode is `development`
+ * @property {boolean} env.test - whether current running mode is `test`
+ * @property {boolean} env.production - whether current running mode is `production`
+ * @property {string} dest - the target build folder relative to `<project root>/build/`
+ * @property {boolean} watch - whether monitoring files changing
+ * @property {boolean} init - whether current running mode is to initialize apps
+ * @property {string} dir.projectRoot - the root directory of current project
+ * @property {string} dir.projectSrc - the source code directory of current project
+ * @property {string} dir.projectTarget - the build code directory of current project
+ * @property {object} errors - whether there are errors raised when parsing the environment
+ * @property {boolean} errors.ERR_NO_ENV - indicates that no running mode is specified
+ * @property {boolean} errors.ERR_MULTIPLE_ENV - indicates that multiple running modes are specified, which is forbidden
+ * @example
  * {
  *   NODE_ENV: 'development',
  *   env: {
@@ -21,6 +34,12 @@ import path from 'path';
  *   },
  *   errors: {},
  * }
+ */
+
+/**
+ * @ignore
+ * Return environment related variables,
+ * @return {EnvInfo}
  */
 export function getEnv(cliOptions) {
   let NODE_ENV = 'development';

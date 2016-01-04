@@ -9,8 +9,22 @@ import ReactDOMServer from 'react-dom/server';
 import { getEnv } from '../share/env';
 
 /**
- * Private global variables
+ * Waterline orm model collections
+ * @typedef Models
  */
+
+/**
+ * Some waterline orm model
+ * @typedef Model
+ */
+
+/**
+ * @module library
+ */
+
+// ===============================
+// Private constants and variables
+// ===============================
 
 // environment related variables
 const _env = getEnv();
@@ -27,21 +41,16 @@ const _waterline = new Waterline();
 // the top level express app
 const _rootExpressApp = express();
 
-/**
- * Private global functions
- */
+// =================
+// Private functions
+// =================
 
 let { match, RouterContext } = require(path.join(_env.dir.projectRoot, 'node_modules/react-router'));
 
 /**
- * @callback iterateCallback
- * @param {string} appName - Current app name
- * @param {object} exseedApp - Current app instance
- */
-
-/**
- * iterate through exseed apps
- * @param {iterateCallback} cb - The callback when iterating
+ * Iterate through exseed apps
+ * @ignore
+ * @param {module:callback.iterate} cb - The callback when iterating
  */
 let iterateApps = (cb) => {
   for (let appName in _appInstances) {
@@ -50,6 +59,16 @@ let iterateApps = (cb) => {
   }
 };
 
+// ==============================
+// Exported constants, variables,
+// functions and classes
+// ==============================
+
+/**
+ * Render a full page html from a react component
+ * @param {Component} component - react component
+ * @return {string} the derived html
+ */
 export function renderComponent(component) {
   const Helmet = require(
     path.join(_env.dir.projectRoot, 'node_modules/react-helmet'));
@@ -76,7 +95,10 @@ export function renderComponent(component) {
 };
 
 /**
- *
+ * Render a full page html from specified app name and route path
+ * @param {string} appName - exseed app name
+ * @param {string} url - the url path configured in `project_root/some_app/routes.js`
+ * @param {module:callback.renderPath} cb - callback
  */
 export function renderPath(appName, url, cb) {
   const exseedApp = _appInstances[appName];
@@ -98,12 +120,16 @@ export function renderPath(appName, url, cb) {
 }
 
 /**
- * Exported variables and functions
+ * Environment information
+ * @constant
+ * @type {EnvInfo}
  */
-
 export const env = _env;
 
-// waterline orm models
+/**
+ * @var
+ * @type {Models}
+ */
 export let models = null;
 
 export let middlewares = {
@@ -111,61 +137,15 @@ export let middlewares = {
   static: express.static,
 };
 
+export const App = require('./classes/App').default;
+export const Err = require('./classes/Err').default;
+export const PageNotFound = require('./errors/PageNotFound').default;
+
 /**
- * App class
- * @class
+ * Load modules from other apps
+ * @param {string} appName - the registered app name of some app
+ * @return {*} the result depends on what is returned in {@link App#getModules}
  */
-export class App {
-  /**
-   * Generates a new express app,
-   * and mount it onto the top level express app
-   * @constructs App
-   */
-  constructor(props) {
-    /**
-     * The express app
-     * @member App#expressApp
-     */
-    this.expressApp = props.app;
-    this.name = props.name;
-    this.dir = props.dir;
-    _rootExpressApp.use('/', this.expressApp);
-  }
-
-  init(models) {
-  }
-
-  routing(app, models) {
-  }
-
-  onError(err, req, res) {
-  }
-
-  onErrorEnd(err, req, res) {
-  }
-
-  getModules() {
-    return {};
-  }
-}
-
-export class Err {
-  constructor(message='Unnamed error', status=500) {
-    this.name = this.constructor.name;
-    this.message = message;
-    this.status = status;
-    Error.captureStackTrace(this, this.constructor);
-  }
-}
-
-export class PageNotFound extends Err {
-  constructor(
-    msg='The url you are requesting does not exist',
-    status=404) {
-    super(msg, status);
-  }
-}
-
 export function load(appName) {
   return _appInstances[appName].getModules();
 }
@@ -173,14 +153,15 @@ export function load(appName) {
 /**
  * Register an exseed app
  * @param {string} appName - An identifier of exseed app
- * @param {App} AppClass
- *   - An exseed app class declaration extends from App
+ * @param {string} appDir - The directory of exseed app
+ * @return {object} the derived {@link App} instance
  */
 export function registerApp(appName, appDir) {
   let AppClass = require(
     path.join(_env.dir.projectTarget, appDir, 'index.js')).default;
   let newExpressApp = express();
   const appInstance = new AppClass({
+    rootApp: _rootExpressApp,
     app: newExpressApp,
     name: appName,
     dir: appDir,
@@ -189,7 +170,11 @@ export function registerApp(appName, appDir) {
   return appInstance;
 }
 
-export function getAppInstances(appName, appDir) {
+/**
+ * Get an instance map with registered app name as key and {@link App} instance as value
+ * @return {object}
+ */
+export function getAppInstances() {
   return _appInstances;
 }
 
@@ -220,20 +205,9 @@ export function registerModel(schema) {
 }
 
 /**
- * @callback runCallback
- * @param {object} err - An error object
- * @param {object} models - All orm models
- * @param {object} port - The listening port
- */
-
-/**
- * 1. Initialize waterline orm
- * 2. Iterate through `init` member function of all registered exseed apps
- *    and then exit when `EXSEED_INIT` is set
- * 3. Iterate through `routing` member function of all registered exseed apps
- *    and then launch the server when `EXSEED_INIT` is not set
- * @param {object} customSettings - The global settings
- * @param {runCallback} cb - The callback after serving
+ * Launch server
+ * @param {object} customSettings - The global settings of all apps, you can find it on `project_root/src/settings.server.js` by default
+ * @param {module:callback.run} cb - The callback when server launches
  */
 export function run(customSettings, cb) {
   assign(_appSettings, customSettings);
@@ -289,20 +263,6 @@ export function run(customSettings, cb) {
       });
       return;
     }
-
-    // error handling
-    _rootExpressApp.use((err, req, res, next) => {
-      if (err) {
-        iterateApps((appName, exseedApp) => {
-          exseedApp.onError(err, req, res);
-        });
-        if (!res.headersSent) {
-          iterateApps((appName, exseedApp) => {
-            exseedApp.onErrorEnd(err, req, res);
-          });
-        }
-      }
-    });
 
     // serve global static files
     _rootExpressApp.use(express.static(
@@ -360,6 +320,20 @@ export function run(customSettings, cb) {
       next(new PageNotFound());
     });
 
+    // error handling
+    _rootExpressApp.use((err, req, res, next) => {
+      if (err) {
+        iterateApps((appName, exseedApp) => {
+          exseedApp.onError(err, req, res);
+        });
+        if (!res.headersSent) {
+          iterateApps((appName, exseedApp) => {
+            exseedApp.onErrorEnd(err, req, res);
+          });
+        }
+      }
+    });
+
     // launch server
     const port = process.env.PORT || _appSettings.server.port[_env.NODE_ENV];
     _rootExpressApp.httpServer = http
@@ -373,9 +347,30 @@ export function run(customSettings, cb) {
   });
 }
 
-/**
- * To support both import ways:
- *   import exseed from 'exseed';
- *   import * as exseed from 'exseed';
- */
+// To support both import ways:
+//   import exseed from 'exseed';
+//   import * as exseed from 'exseed';
 exports.default = module.exports;
+
+/**
+ * @module callback
+ */
+
+/**
+ * @callback module:callback.renderPath
+ * @param {object} err - an error object
+ * @param {string} html - the result html
+ */
+
+/**
+ * @callback module:callback.run
+ * @param {object} err - An error object
+ * @param {object} models - All orm models
+ * @param {object} port - The listening port
+ */
+
+/**
+ * @callback module:callback.iterate
+ * @param {string} appName - Current app name
+ * @param {object} exseedApp - Current app instance
+ */
