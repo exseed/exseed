@@ -1,17 +1,6 @@
 var webpack = require('webpack');
-
-var babelSettings = {
-  cacheDirectory: true,
-  plugins: [
-    'transform-decorators-legacy',
-  ],
-  presets: [
-    'react-hmre',
-    'stage-0',
-    'es2015',
-    'react',
-  ],
-};
+var babelSettings = require('./defaultBabelSettings');
+babelSettings.presets.unshift('react-hmre');
 
 module.exports = {
   devtool: 'eval',

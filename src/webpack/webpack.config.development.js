@@ -1,16 +1,5 @@
 var webpack = require('webpack');
-
-var babelSettings = {
-  cacheDirectory: true,
-  plugins: [
-    'transform-decorators-legacy',
-  ],
-  presets: [
-    'stage-0',
-    'es2015',
-    'react',
-  ],
-};
+var babelSettings = require('./defaultBabelSettings');
 
 module.exports = {
   devtool: 'eval',
