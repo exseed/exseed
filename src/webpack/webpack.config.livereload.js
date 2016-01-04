@@ -6,22 +6,10 @@ var babelSettings = {
     'transform-decorators-legacy',
   ],
   presets: [
+    'react-hmre',
     'stage-0',
     'es2015',
     'react',
-  ],
-  plugins: [
-    'transform-decorators-legacy',
-    ['react-transform', {
-      transforms: [{
-        transform: 'react-transform-hmr',
-        imports: ['react'],
-        locals: ['module'],
-      }, {
-        transform: "react-transform-catch-errors",
-        imports: ["react", "redbox-react"],
-      },],
-    },],
   ],
 };
 
