@@ -1,11 +1,11 @@
 import Err from '../classes/Err';
 
-class PageNotFound extends Err {
-  constructor(
-    msg='The url you are requesting does not exist',
-    status=404) {
-    super(msg, status);
+export default class PageNotFound extends Err {
+  constructor(props) {
+    super(props, {
+      title: 'Page not found',
+      message: 'The url you are requesting does not exist',
+      status: 404,
+    });
   }
-}
-
-export default PageNotFound;
+};

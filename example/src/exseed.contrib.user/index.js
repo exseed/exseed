@@ -120,12 +120,7 @@ class UserApp extends App {
         res.clearCookie('access_token');
         res
           .status(err.status)
-          .json({
-            errors: [{
-              title: 'token expired',
-              detail: err.message,
-            },],
-          });
+          .json(err.toApiResponse());
         break;
       }
       case 'TokenInvalid': {
@@ -133,12 +128,7 @@ class UserApp extends App {
         res.clearCookie('access_token');
         res
           .status(err.status)
-          .json({
-            errors: [{
-              title: 'token invalid',
-              detail: err.message,
-            },],
-          });
+          .json(err.toApiResponse());
         break;
       }
     }
