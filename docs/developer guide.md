@@ -2,72 +2,64 @@
 
 This guide provides information that helps you contribute to exseed project
 
-## Git Workflow
-
-### Fork Repo
-
-First of all, fork the official [exseed](https://github.com/exseed/exseed) repo
-
-### Getting Started
-
-Clone forked version of exseed to local, add remote and create a `new feature` branch
-
-```
-$ git clone <your_forked_exseed_repo>
-$ git remote add upstream https://github.com/exseed/exseed.git
-$ git checkout -b <new_feature_branch>
-```
-
-### Develop with New Feature
-
-Edit, stage and commit
-
-```
-$ git status
-$ git add <some_file>
-$ git commit
-```
-
-### Publish
-
-```
-$ git pull upstream
-$ git push
-```
-
-### Open a Pull Request
-
-Go to the exseed official repo and create a pull request
-
-### After New Feature Merged
-
-delete the feature branch
-
-```
-$ git branch -d <new_feature_branch>
-```
-
 ## Developing Workflow
 
 ### Installation
 
-Install gulp as automation tool, and then install dependencies
+Install gulp as automation tool, and then install dependencies of exseed library and example project
 
 ```
-$ npm install -g gulp
-$ npm install
+~ $ npm install -g gulp
+~ $ cd exseed
+~/exseed $ npm install
+~/exseed $ cd example
+~/exseed/example $ npm install
 ```
 
 ### Link Package
 
-```
-$ npm link
-```
+To run the example project with your modified version of exseed, we must link the `example/node_modules/exseed` package to the exseed source code
 
-### Usage
+> Remember that every time after you install dependencies, you have to run these link commands again
 
 ```
-$ sd help
+~/exseed $ npm link
+~/exseed $ cd example
+~/exseed/example $ npm link exseed
 ```
 
-If you want to test your new feature with example project, please refer to [example/README](https://github.com/gocreating/exseed/example)
+### Build Library
+
+It's recommanded that specify the optional `-w` switch, which monitors the file changes and is helpful when developing
+
+```
+~/exseed $ gulp -w
+```
+
+### Build & Run Example Project
+
+We have linked the library, so we can execute the bin file globally:
+
+```
+~/exseed/example $ sd serve --watch
+```
+
+or locally:
+
+```
+~/exseed/example $ ./node_modules/.bin/sd serve --watch
+```
+
+### Test
+
+You can test both exseed library and example project:
+
+```
+~/exseed $ npm test
+```
+
+or test the example project only:
+
+```
+~/exseed/example $ sd test
+```

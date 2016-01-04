@@ -49,9 +49,8 @@ gulp.task('build:library', function() {
     .pipe(gulpif(env.d, sourcemaps.init()))
       .pipe(babel({
         presets: [
-          'es2015',
           'stage-0',
-          'stage-1',
+          'es2015',
           'react',
         ],
       }))
