@@ -14,7 +14,6 @@
     "init_example_test": "cd example && sd init -t && cd ..",
     "init_example_production": "cd example && sd init -p && cd ..",
     "mocha_example": "cd example && sd test && cd ..",
-    "preinstall": "cd example && npm install && cd ..",
     "serve_production": "cd example && sd serve --production && cd .."
   },
   "repository": {
