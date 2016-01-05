@@ -1,6 +1,9 @@
 # Exseed
 
-[![Build Status](https://travis-ci.org/exseed/exseed.svg?branch=master)](https://travis-ci.org/exseed/exseed) [![npm version](https://badge.fury.io/js/exseed.svg)](https://badge.fury.io/js/exseed)
+[![Build Status](https://travis-ci.org/exseed/exseed.svg?branch=master)](https://travis-ci.org/exseed/exseed)
+[![npm version](https://badge.fury.io/js/exseed.svg)](https://badge.fury.io/js/exseed)
+[![Code Climate](https://codeclimate.com/github/exseed/exseed/badges/gpa.svg)](https://codeclimate.com/github/exseed/exseed)
+[![Dependency Status](https://david-dm.org/exseed/exseed.svg)](https://david-dm.org/exseed/exseed)
 
 A highly extensible nodejs framework
 
