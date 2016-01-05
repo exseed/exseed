@@ -5,8 +5,9 @@ node_modules
 sftp-configuration.json
 
 # Secret
-github
-github.pub
+*.pub
+*.pem
+*.ppk
 
 # Log
 *.log

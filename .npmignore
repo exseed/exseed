@@ -5,3 +5,6 @@ gulpfile.js
 /src
 /example
 /docs
+.pub
+.pem
+.ppk
