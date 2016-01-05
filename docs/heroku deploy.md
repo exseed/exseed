@@ -14,5 +14,12 @@ $ heroku git:remote -a <heroku project name>
 ## Deploy
 
 ```
-$ git push heroku master
+# cd exseed/example
+git init
+git add .
+git commit -m "deploy"
+git remote add heroku git@heroku.com:exseed.git
+heroku git:remote -a exseed
+git push heroku master
+rm -fr .git
 ```
