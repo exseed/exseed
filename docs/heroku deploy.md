@@ -1,5 +1,7 @@
 # Heroku Deployment
 
+> This guide is currently broken
+
 ## Heroku Setup
 
 Create new app `exseed`

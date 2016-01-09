@@ -4,10 +4,8 @@
   "fileExtensions": [".js"],
   "excludeFiles": [
     "node_modules/**",
-    "cli/**",
-    "lib/**",
+    "dist/**",
     "docs/**",
-    "example/**"
   ],
   "maximumLineLength": {
     "value": 80,

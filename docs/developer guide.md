@@ -1,5 +1,7 @@
 # Developer Guide
 
+> This guide is currently broken
+
 This guide provides information that helps you contribute to exseed project
 
 ## Developing Workflow

@@ -45,26 +45,28 @@ A highly extensible nodejs framework
 1. Install CLI
 
   ```
-  $ npm install -g exseed
+  $ npm install -g exseed-cli
   ```
 
-2. Clone the [example project](https://github.com/exseed/exseed/tree/master/example)
+2. Clone the [boilerplate project](https://github.com/exseed/exseed-boilerplate)
+
 3. Install dependencies
 
   ```
-  $ cd example
+  $ cd exseed-boilerplate
   $ npm install
   ```
 
 4. Run it
 
   ```
-  $ sd serve --watch --development
+  $ sd build --watch
+  $ sd serve
   ```
 
 ## Example - Todo List
 
-We are going to show you how to write a todo app with exseed
+> This guide is currently broken
 
 1. Register new app
 
@@ -198,7 +200,7 @@ We are going to show you how to write a todo app with exseed
   };
   ```
 
-See the complete [todo app](https://github.com/exseed/exseed/tree/master/example/src/todoapp)
+See the complete [todo app](https://github.com/exseed/exseed-boilerplate/tree/master/src/todoapp)
 
 ## Docs
 
