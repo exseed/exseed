@@ -60,7 +60,37 @@ function _initApp() {
 }
 
 function _injectLivereload() {
-  // TO-DO
+  console.log('using livereload');
+
+  // dependencies for livereloading react
+  const webpack = require('webpack');
+  const config = requireFrom.cliRoot('dist/configs/webpack.livereload');
+  const webpackDevMiddleware = require('webpack-dev-middleware');
+  const webpackHotMiddleware = require('webpack-hot-middleware');
+
+  // webpack compilation
+  let appAliasArray = [];
+  _forEachApp((appInst) => {
+    if (appInst._bootSrcPath) {
+      config.entry[appInst.alias] = [
+        appInst._bootSrcPath,
+        'webpack-hot-middleware/client',
+      ];
+      return appInst.alias;
+    }
+    return false;
+  });
+  config.output.path = opts.dir.target;
+  config.plugins.push(
+    new webpack.optimize.CommonsChunkPlugin('js/common.js', appAliasArray)
+  );
+
+  let compiler = webpack(config);
+  _expressApp.use(webpackDevMiddleware(compiler, {
+    noInfo: true,
+    publicPath: config.output.publicPath,
+  }));
+  _expressApp.use(webpackHotMiddleware(compiler));
 }
 
 function _serveStatics() {

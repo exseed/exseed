@@ -1,7 +1,14 @@
 import path from 'path';
+import fs from 'fs';
+import opts from '../options';
 import { requireFrom } from '../utils';
 
 const dummyFunc = () => {};
+
+function getBootSrcPath(appPath) {
+  const bootSrcPath = path.join(opts.dir.src, appPath, 'flux/boot.js');
+  return fs.existsSync(bootSrcPath)? bootSrcPath: undefined;
+}
 
 export default class App {
   constructor(appPath) {
@@ -12,6 +19,7 @@ export default class App {
 
     // private member
     this._pageRoutes = requireFrom.target(appPath, 'flux/routes');
+    this._bootSrcPath = getBootSrcPath(appPath);
     this._func = {
       init: requireFrom.target(appPath, 'init') || dummyFunc,
       models: requireFrom.target(appPath, 'models') || dummyFunc,
