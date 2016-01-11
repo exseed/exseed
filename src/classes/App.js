@@ -11,6 +11,7 @@ export default class App {
     this.alias = this.settings.name;
 
     // private member
+    this._pageRoutes = requireFrom.target(appPath, 'flux/routes');
     this._func = {
       init: requireFrom.target(appPath, 'init') || dummyFunc,
       models: requireFrom.target(appPath, 'models') || dummyFunc,
