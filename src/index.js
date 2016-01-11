@@ -15,32 +15,53 @@ import ReactDOMServer from 'react-dom/server';
 
 // local modules
 import { requireFrom } from './utils';
-import opts from './options';
 import { App } from './classes';
+import opts from './options';
 
 // ===============================
 // Private constants and variables
 // ===============================
 
+const _waterline = new Waterline();
+const _expressApp = express();
 const _settings = requireFrom.target('settings');
-const _appInstMap = {};
-
-_settings.installedApps
-  .forEach((appPath) => {
-    const appInst = new App(appPath);
-    _appInstMap[appInst.name] = appInst;
-    _appInstMap[appInst.alias] = appInst;
-  });
+let _appInstMap = {};
+let _appInstArr = [];
 
 // =================
 // Private functions
 // =================
 
+function _getAppInstMap() {
+  let appInstMap = {};
+  _settings.installedApps
+    .forEach((appPath) => {
+      const appInst = new App(appPath);
+      appInstMap[appInst.name] = appInst;
+      appInstMap[appInst.alias] = appInst;
+      _appInstArr.push(appInst);
+    });
+  return appInstMap;
+}
 
+function _forEachApp(func) {
+  _appInstArr.forEach(func);
+}
 
-// ==============================
-// Exported constants, variables,
-// functions and classes
-// ==============================
+(function _main() {
+  _appInstMap = _getAppInstMap();
+  _forEachApp((appInst) => {
+    appInst._func.middlewares({ app: _expressApp });
+  });
+  _forEachApp((appInst) => {
+    appInst._func.routes({ app: _expressApp });
+  });
+})();
+
+// ===========
+// Public APIs
+// ===========
 
 export const env = opts.env;
+
+export const app = _expressApp;
