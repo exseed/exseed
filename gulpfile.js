@@ -14,7 +14,8 @@ var files = {
 
 // clean build files
 gulp.task('clean', function(done) {
-  rimraf('./build', done);
+  rimraf.sync('./build');
+  done();
 });
 
 // build source files
