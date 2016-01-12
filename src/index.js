@@ -12,11 +12,13 @@ import express from 'express';
 import Waterline from 'waterline';
 import React from 'react';
 import ReactDOMServer from 'react-dom/server';
+import async from 'async';
 
 // local modules
 import { requireFrom } from './utils';
 import { App } from './classes';
 import opts from './options';
+import pOpts from './processOptions';
 
 // ===============================
 // Private constants and variables
@@ -27,6 +29,7 @@ const _expressApp = express();
 const _settings = requireFrom.target('settings');
 let _appInstMap = {};
 let _appInstArr = [];
+let _models = {};
 
 // =================
 // Private functions
@@ -47,16 +50,79 @@ function _getAppInstMap() {
   return appInstMap;
 }
 
-function _forEachApp(func) {
-  _appInstArr.forEach(func);
+function _forEachApp(func, done) {
+  _appInstArr.forEach((element, index, arr) => {
+    func(element, index, arr);
+    if (index === arr.length - 1 && done !== undefined) {
+      done();
+    }
+  });
 }
 
-function _setupWaterline() {
-  // TO-DO
+function _addModel(schema) {
+  // add default value for the schema
+  Object.assign(schema, {
+    connection: 'default',
+
+    /*
+     * migrate: 'alter'
+     *   adds and/or removes columns on changes to the schema
+     * migrate: 'drop'
+     *   drops all your tables and then re-creates them. All data is deleted.
+     * migrate: 'safe'
+     *   doesn't do anything on sails lift- for use in production.
+     */
+    // Sets the schema to automatically `alter` the schema, `drop` the schema or make no changes (`safe`). Default: `alter`
+    // ref: https://github.com/balderdashy/waterline-docs/blob/master/models/configuration.md#migrate
+    migrate: schema.migrate || (
+      opts.env.development? 'alter':
+      opts.env.test? 'safe':
+      'safe'),
+  });
+  let collections = Waterline.Collection.extend(schema);
+  _waterline.loadCollection(collections);
+}
+
+function _setupWaterline(cb) {
+  _forEachApp((appInst) => {
+    const schemas = appInst._modelSchemas;
+    if (schemas) {
+      for (let key in schemas) {
+        _addModel(schemas[key]);
+      }
+    }
+  });
+
+  _waterline.initialize(_settings.db[opts.env.NODE_ENV], (err, ontology) => {
+    if (err) {
+      return cb(err);
+    }
+    _models = ontology.collections;
+    cb(null);
+  });
 }
 
 function _initApp() {
-  // TO-DO
+  let appInstArr = [];
+  if (pOpts.name) {
+    // init specified app
+    const appInst = _appInstMap[pOpts.name];
+    if (appInst) {
+      appInstArr.push(appInst);
+    } else {
+      console.error(`"${pOpts.name}" is not an installed app`);
+    }
+  } else {
+    // init all apps
+    appInstArr = _appInstArr;
+  }
+
+  async.eachSeries(appInstArr, (appInst, callback) => {
+    console.log(`Initialize ${appInst.name}\n---\n`);
+    appInst._func.init({ done: callback });
+  }, () => {
+    process.exit();
+  });
 }
 
 function _injectLivereload() {
@@ -96,7 +162,7 @@ function _injectLivereload() {
 function _serveStatics() {
   // global static files
   _expressApp.use(express.static(
-      path.join(opts.dir.target, 'public')));
+    path.join(opts.dir.target, 'public')));
   // app's static files
   _forEachApp((appInst) => {
     _expressApp.use('/' + appInst.alias, express.static(
@@ -140,22 +206,29 @@ function _injectReactSSR() {
 
 (function _main() {
   _appInstMap = _getAppInstMap();
-  _setupWaterline();
-  if (opts.watch) {
-    _initApp();
-  }
-  if (opts.watch) {
-    _injectLivereload();
-  }
-  _serveStatics();
-
-  _forEachApp((appInst) => {
-    appInst._func.middlewares({ app: _expressApp });
+  _setupWaterline(() => {
+    // init
+    if (pOpts.init) {
+      _initApp();
+    } else {
+      // livereload
+      if (opts.watch) {
+        _injectLivereload();
+      }
+      // statics
+      _serveStatics();
+      // middlewares
+      _forEachApp((appInst) => {
+        appInst._func.middlewares({ app: _expressApp });
+      });
+      // routes
+      _forEachApp((appInst) => {
+        appInst._func.routes({ app: _expressApp });
+      });
+      // react full page render
+      _injectReactSSR();
+    }
   });
-  _forEachApp((appInst) => {
-    appInst._func.routes({ app: _expressApp });
-  });
-  _injectReactSSR();
 })();
 
 // ===========
@@ -164,7 +237,7 @@ function _injectReactSSR() {
 
 export const env = opts.env;
 
-export const app = _expressApp;
+export { _expressApp as app };
 
 export function renderComponent(component) {
   // const Helmet = require(
@@ -191,3 +264,8 @@ export function renderComponent(component) {
     '</body>'
   );
 };
+
+import _Err from './classes/Err';
+export { _Err as Err };
+
+export { _models as models };

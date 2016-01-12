@@ -3,6 +3,7 @@ import fs from 'fs';
 import opts from '../options';
 import { requireFrom } from '../utils';
 
+const defaultInit = ({ done }) => { done(); };
 const dummyFunc = () => {};
 
 function getBootSrcPath(appPath) {
@@ -20,9 +21,9 @@ export default class App {
     // private member
     this._pageRoutes = requireFrom.target(appPath, 'flux/routes');
     this._bootSrcPath = getBootSrcPath(appPath);
+    this._modelSchemas = requireFrom.target(appPath, 'models'),
     this._func = {
-      init: requireFrom.target(appPath, 'init') || dummyFunc,
-      models: requireFrom.target(appPath, 'models') || dummyFunc,
+      init: requireFrom.target(appPath, 'init') || defaultInit,
       middlewares: requireFrom.target(appPath, 'middlewares') || dummyFunc,
       routes: requireFrom.target(appPath, 'routes') || dummyFunc,
       views: requireFrom.target(appPath, 'views') || dummyFunc,

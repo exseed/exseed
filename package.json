@@ -25,6 +25,7 @@
   },
   "homepage": "https://github.com/exseed/exseed",
   "dependencies": {
+    "async": "^1.5.2",
     "express": "^4.13.3",
     "react": "^0.14.2",
     "react-dom": "^0.14.2",
