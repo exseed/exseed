@@ -1,7 +1,7 @@
 import path from 'path';
 import fs from 'fs';
 import opts from '../options';
-import { requireFrom } from '../utils';
+import { requireFrom, requireRawModule } from '../utils';
 
 const defaultInit = ({ done }) => { done(); };
 const dummyFunc = () => {};
@@ -13,6 +13,8 @@ function getBootSrcPath(appPath) {
 
 export default class App {
   constructor(appPath) {
+    const rawErrorModule = requireRawModule(opts.dir.target, appPath, 'errors');
+
     // public member
     this.name = path.parse(appPath).base;
     this.settings = requireFrom.target(this.name, 'settings');
@@ -28,6 +30,8 @@ export default class App {
       routes: requireFrom.target(appPath, 'routes') || dummyFunc,
       views: requireFrom.target(appPath, 'views') || dummyFunc,
       errors: requireFrom.target(appPath, 'errors') || dummyFunc,
+      onAfterError:
+        (rawErrorModule && rawErrorModule.onAfterError) || dummyFunc,
     };
   }
 }
