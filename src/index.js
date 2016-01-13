@@ -16,7 +16,7 @@ import async from 'async';
 
 // local modules
 import { requireFrom } from './utils';
-import { App } from './classes';
+import { App, PageNotFound } from './classes';
 import opts from './options';
 import pOpts from './processOptions';
 
@@ -159,7 +159,7 @@ function _injectLivereload() {
   _expressApp.use(webpackHotMiddleware(compiler));
 }
 
-function _serveStatics() {
+function _handleStatics() {
   // global static files
   _expressApp.use(express.static(
     path.join(opts.dir.target, 'public')));
@@ -170,7 +170,19 @@ function _serveStatics() {
   });
 }
 
-function _injectReactSSR() {
+function _handleMiddlewares() {
+  _forEachApp((appInst) => {
+    appInst._func.middlewares({ app: _expressApp });
+  });
+}
+
+function _handleRoutes() {
+  _forEachApp((appInst) => {
+    appInst._func.routes({ app: _expressApp });
+  });
+}
+
+function _handlePageRender() {
   _forEachApp((appInst) => {
     const routes = appInst._pageRoutes;
     if (routes) {
@@ -204,6 +216,28 @@ function _injectReactSSR() {
   });
 }
 
+function _handleRouteNotFound() {
+  _expressApp.use((req, res, next) => {
+    next(new PageNotFound());
+  });
+}
+
+function _handleErrors() {
+  _expressApp.use((err, req, res, next) => {
+    if (err) {
+      _forEachApp((appInst) => {
+        appInst._func.errors({ err, req, res });
+      });
+
+      if (!res.headersSent) {
+        _forEachApp((appInst) => {
+          appInst._func.onAfterError({ err, req, res });
+        });
+      }
+    }
+  });
+}
+
 (function _main() {
   _appInstMap = _getAppInstMap();
   _setupWaterline(() => {
@@ -216,17 +250,17 @@ function _injectReactSSR() {
         _injectLivereload();
       }
       // statics
-      _serveStatics();
+      _handleStatics();
       // middlewares
-      _forEachApp((appInst) => {
-        appInst._func.middlewares({ app: _expressApp });
-      });
+      _handleMiddlewares();
       // routes
-      _forEachApp((appInst) => {
-        appInst._func.routes({ app: _expressApp });
-      });
+      _handleRoutes();
       // react full page render
-      _injectReactSSR();
+      _handlePageRender();
+      // 404
+      _handleRouteNotFound();
+      // error handling
+      _handleErrors();
     }
   });
 })();
@@ -264,6 +298,26 @@ export function renderComponent(component) {
     '</body>'
   );
 };
+
+export function renderPath(appName, url, cb) {
+  const appInst = _appInstMap[appName];
+  // const routesPath = path.join(
+  //   opts.dir.target, appInst.name, 'routes.js');
+  // const routes = require(routesPath).default;
+  const routes = requireFrom.target(appInst.name, 'flux/routes.js');
+  match({
+    routes,
+    location: url,
+  }, (err, redirectLocation, renderProps) => {
+    if (renderProps) {
+      const component = <RouterContext {...renderProps} />;
+      const html = renderComponent(component);
+      cb(err, html);
+    } else {
+      cb(err, null);
+    }
+  });
+}
 
 import _Err from './classes/Err';
 export { _Err as Err };
