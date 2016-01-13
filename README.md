@@ -61,34 +61,62 @@ A highly extensible nodejs framework
 
   ```
   $ sd build --watch
+  $ sd init
   $ sd serve
   ```
 
 ## Example - Todo List
 
-> This guide is currently broken
+1. File Structure
 
-1. Register new app
-
-  ```js
-  // <project_root>/app.js
-
-  import * as exseed from 'exseed';
-
-  exseed.registerApp('core', './exseed.core');
-  // ...
-  exseed.registerApp('todo', './todoapp');
-  // ...
-
-  export default exseed;
+  ```
+  - <project root>
+  ----- settings.js
+  ----- exseed.core/
+  ----- todoapp/
+  --------- settings.js
+  --------- models.js
+  --------- routes.js
+  --------- flux/
+  ------------- boot.js
+  ------------- routes.js
+  ------------- views/pages/MainPage.js
+  ----- <other_app_1>/
+  ----- <other_app_2>/
+  ----- <other_app_n>/
   ```
 
-2. Create database schema
+2. Update installed apps
+
+  Tell exseed what apps you want to use
 
   ```js
-  // <todo_app>/models/todolist.js
+  // settings.js
 
   export default {
+    installedApps: [
+      './exseed.core',
+      // other apps
+      './todoapp',
+    ],
+    // other settings
+  };
+  ```
+
+3. The server side
+
+  ```js
+  // todoapp/settings.js
+
+  export default {
+    name: 'todo',
+  };
+  ```
+
+  ```js
+  // todoapp/models.js
+
+  export const todolist = {
     identity: 'todolist',
     attributes: {
       content: {
@@ -99,62 +127,57 @@ A highly extensible nodejs framework
   };
   ```
 
-3. The server side
-
   ```js
-  // <todo_app>/settings.js
+  // todoapp/routes.js
+  
+  import { models } from 'exseed';
 
-  export default {
-    name: 'todo',
-  };
-  ```
+  export default function routes({ app }) {
+    app.get('/api/todolist', (req, res) => {
+      models.todolist
+        .find()
+        .then((todolist) => {
+          res.json(todolist);
+        });
+    });
 
-  ```js
-  // <todo_app>/index.js
-
-  import {
-    App,
-    registerModel
-  } from 'exseed';
-
-  class TodoApp extends App {
-    constructor(app, name, dir) {
-      super(app, name, dir);
-      registerModel(require('./models/todolist').default);
-    }
-
-    routing(app, models) {
-      app.get('/api/todolist', (req, res) => {
-        models.todolist
-          .find()
-          .then((todolist) => {
-            res.json(todolist);
-          });
-      });
-
-      app.post('/api/todolist', (req, res) => {
-        models.todolist
-          .create(req.body.todo)
-          .then((todo) => {
-            res.json(todo);
-          });
-      });
-    }
-  };
-
-  export default TodoApp;
+    app.post('/api/todolist', (req, res) => {
+      models.todolist
+        .create(req.body.todo)
+        .then((todo) => {
+          res.json(todo);
+        });
+    });
+  }
   ```
 
 4. The client side
 
+  All react related files are inside `todoapp/flux` folder
+
   ```js
-  // <todo_app>/routes.js
+  // todoapp/flux/boot.js
+
+  import React from 'react';
+  import { render } from 'react-dom';
+  import { Router, browserHistory } from 'react-router';
+  import routes from './routes';
+
+  render(
+    <Router history={browserHistory}>
+      {routes}
+    </Router>
+  , document.getElementById('exseed_root'));
+  ```
+
+  ```js
+  // todoapp/flux/routes.js
 
   import React from 'react';
   import { Route, IndexRoute } from 'react-router';
 
-  import settings from './settings';
-  import MainPage from './flux/views/pages/MainPage';
+  import settings from '../settings';
+  import MainPage from './views/pages/MainPage';
 
   export default (
     <Route path="/todo" component={MainPage} EXSEED_APP_NAME={settings.name} />
@@ -162,7 +185,7 @@ A highly extensible nodejs framework
   ```
 
   ```js
-  // <todo_app>/flux/views/pages/MainPage.js
+  // todoapp/flux/views/pages/MainPage.js
 
   import React from 'react';
   import BaseLayout
