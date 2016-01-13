@@ -1,0 +1,1 @@
+export const FORMAT_OPTION_FILE_NAME = '.exseed.opts.json';
