@@ -5,7 +5,7 @@
   "excludeFiles": [
     "node_modules/**",
     "dist/**",
-    "docs/**",
+    "docs/**"
   ],
   "maximumLineLength": {
     "value": 80,

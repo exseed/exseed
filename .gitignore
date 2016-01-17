@@ -14,7 +14,6 @@ sftp-configuration.json
 
 # Build files
 /dist
-/core
 
 # Others
 .DS_Store

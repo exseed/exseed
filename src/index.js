@@ -136,6 +136,8 @@ function _injectLivereload() {
 
   // webpack compilation
   let appAliasArray = [];
+
+  // insert entries
   _forEachApp((appInst) => {
     if (appInst._bootSrcPath) {
       config.entry[appInst.alias] = [
@@ -146,12 +148,54 @@ function _injectLivereload() {
     }
     return false;
   });
+
+  // insert output path
   config.output.path = opts.dir.target;
+
+  // insert common plugin
   config.plugins.push(
-    new webpack.optimize.CommonsChunkPlugin('js/common.js', appAliasArray)
+    new webpack.optimize.CommonsChunkPlugin(
+      'js/common.js', appAliasArray)
   );
 
-  let compiler = webpack(config);
+  // insert resolve paths of loaders
+  config.resolveLoader = {
+    modulesDirectories: [
+      // the default value
+      // see https://webpack.github.io/docs/configuration.html#resolveloader
+      'web_loaders',
+      'web_modules',
+      'node_loaders',
+      'node_modules',
+      // use loaders (like babel-loader) installed in exseed-cli
+      path.join(opts.dir.cliRoot, 'node_modules'),
+    ],
+  };
+
+  config.resolve = {
+    modulesDirectories: [
+      // the default value
+      // see https://webpack.github.io/docs/configuration.html#resolve-modulesdirectories
+      'web_modules',
+      'node_modules',
+      // only for resolving `webpack-hot-middleware/client`
+      path.join(__dirname, '../node_modules'),
+    ]
+  };
+
+  let compiler = webpack(config, (err, stats) => {
+    if (err) {
+      throw err;
+    }
+    const jsonStats = stats.toJson();
+    if (jsonStats.errors.length > 0) {
+      throw jsonStats.errors;
+    }
+    if (jsonStats.warnings.length > 0) {
+      console.warn(jsonStats.warnings);
+    }
+  });
+
   _expressApp.use(webpackDevMiddleware(compiler, {
     noInfo: true,
     publicPath: config.output.publicPath,
@@ -274,12 +318,10 @@ export const env = opts.env;
 export { _expressApp as app };
 
 export function renderComponent(component) {
-  // const Helmet = require(
-  //   path.join(_env.dir.projectRoot, 'node_modules/react-helmet'));
   const Helmet = requireFrom.module('react-helmet');
-  // the order of generating `html` and `head` cannot be exchanged
-  // it's fucking weird...
   const html = ReactDOMServer.renderToString(component);
+  // call `rewind()` after `ReactDOM.renderToString` or `ReactDOM.renderToStaticMarkup`
+  // see https://github.com/nfl/react-helmet#server-usage
   const head = Helmet.rewind();
   const title = head? head.title.toString(): '';
   const meta = head? head.meta.toString(): '';
@@ -301,9 +343,6 @@ export function renderComponent(component) {
 
 export function renderPath(appName, url, cb) {
   const appInst = _appInstMap[appName];
-  // const routesPath = path.join(
-  //   opts.dir.target, appInst.name, 'routes.js');
-  // const routes = require(routesPath).default;
   const routes = requireFrom.target(appInst.name, 'flux/routes.js');
   match({
     routes,
