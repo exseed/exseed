@@ -15,7 +15,8 @@ import ReactDOMServer from 'react-dom/server';
 import async from 'async';
 
 // local modules
-import { requireFrom } from './utils';
+import { DEFAULT_SETTINGS } from './constants';
+import { requireFrom, requireRawModule } from './utils';
 import { App, PageNotFound } from './classes';
 import opts from './options';
 import pOpts from './processOptions';
@@ -26,7 +27,7 @@ import pOpts from './processOptions';
 
 const _waterline = new Waterline();
 const _expressApp = express();
-const _settings = requireFrom.target('settings');
+const _settings = requireFrom.target('settings') || DEFAULT_SETTINGS;
 let _appInstMap = {};
 let _appInstArr = [];
 let _models = {};
@@ -35,8 +36,10 @@ let _models = {};
 // Private functions
 // =================
 
-const { match, RouterContext } = require(path.join(
-  opts.dir.root, 'node_modules/react-router'));
+// const { match, RouterContext } = require(path.join(
+//   opts.dir.root, 'node_modules/react-router'));
+const { match, RouterContext } = requireRawModule(
+  opts.dir.root, 'node_modules/react-router') || {};
 
 function _getAppInstMap() {
   let appInstMap = {};
@@ -180,7 +183,7 @@ function _injectLivereload() {
       'node_modules',
       // only for resolving `webpack-hot-middleware/client`
       path.join(__dirname, '../node_modules'),
-    ]
+    ],
   };
 
   let compiler = webpack(config, (err, stats) => {
