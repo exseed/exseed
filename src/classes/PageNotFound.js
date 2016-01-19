@@ -1,4 +1,4 @@
-import { Err } from '.';
+import { Err } from './';
 
 export default class PageNotFound extends Err {
   constructor(props) {
