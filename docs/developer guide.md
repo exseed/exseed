@@ -22,44 +22,36 @@ This guide provides information that helps you contribute to exseed project
   ~/projects/exseed-boilerplate $ sudo npm install
   ```
 
-3. Link Projects
-
-  ```
-  ~/projects/exseed $ sudo npm link
-  ~/projects/exseed-cli $ sudo npm link
-  ~/projects/exseed-boilerplate $ sudo npm link exseed
-  ```
-
-4. Install gulp as automation tool
+3. Install gulp as automation tool
 
   ```
   ~/projects $ npm install -g gulp
   ```
 
-### Link Package
-
-Every time after you install dependencies, you have to run these link commands.
-
-```
-~/exseed $ npm link
-~/exseed-boilerplate $ npm link exseed
-~/exseed-cli $ npm link
-```
-
-The first two commands link the library and boilerplate together.
-The last command expose `sd` execution binary for you to run exseed cli commands. 
-
-### Build
+### Build Library & CLI
 
 ```
 ~/exseed $ gulp                         # Terminal 1
 ~/exseed-cli $ gulp                     # Terminal 2
+```
+
+The two processes will stop logging anything after `Finished 'watch'`, which is default behavior. You can leave the two processes run in the background, and they will monitor source file changing.
+
+### Link Package
+
+```
+~/exseed $ npm link
+~/exseed-cli $ npm link
+~/exseed-boilerplate $ npm link exseed
+```
+
+The first and the last commands link the library and boilerplate together.
+The command in the middle exposes `sd` execution binary for you to run exseed cli commands. 
+
+### Build & Run Boilerplate Project
+
+```
 ~/exseed-boilerplate $ sd build --watch # Terminal 3
-```
-
-### Run Boilerplate Project
-
-```
 ~/exseed-boilerplate $ sd init          # Terminal 4
 ~/exseed-boilerplate $ sd serve         # Terminal 4
 ```
