@@ -7,6 +7,9 @@ export default function requireRawModule(...filePath) {
     const required = require(requirePath);
     return required;
   } catch (e) {
+    if (e.code !== 'MODULE_NOT_FOUND') {
+      throw e;
+    }
     // if module does not exist
     return undefined;
   }

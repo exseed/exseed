@@ -1,13 +1,7 @@
 import path from 'path';
+import requireRawModule from './requireRawModule';
 
 export default function requireModule(...filePath) {
-  const requirePath = path.join(...filePath);
-  try {
-    // if module exists
-    const required = require(requirePath);
-    return required.default || required;
-  } catch (e) {
-    // if module does not exist
-    return undefined;
-  }
+  const required = requireRawModule(...filePath);
+  return (required? (required.default || required): undefined);
 };
