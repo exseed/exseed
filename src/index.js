@@ -20,6 +20,8 @@ import { requireFrom, requireRawModule } from './utils';
 import { App, PageNotFound } from './classes';
 import opts from './options';
 import pOpts from './processOptions';
+import _Err from './classes/Err';
+export { _Err as Err };
 
 // ===============================
 // Private constants and variables
@@ -360,8 +362,5 @@ export function renderPath(appName, url, cb) {
     }
   });
 }
-
-import _Err from './classes/Err';
-export { _Err as Err };
 
 export { _models as models };
