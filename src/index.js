@@ -154,6 +154,12 @@ function _injectLivereload() {
     return false;
   });
 
+  // insert resolve alias
+  _forEachApp((appInst) => {
+    config.resolve.alias[`@${appInst.alias}`] =
+      path.join(opts.dir.src, appInst.appPath, 'flux');
+  });
+
   // insert output path
   config.output.path = opts.dir.target;
 
@@ -177,16 +183,14 @@ function _injectLivereload() {
     ],
   };
 
-  config.resolve = {
-    modulesDirectories: [
-      // the default value
-      // see https://webpack.github.io/docs/configuration.html#resolve-modulesdirectories
-      'web_modules',
-      'node_modules',
-      // only for resolving `webpack-hot-middleware/client`
-      path.join(__dirname, '../node_modules'),
-    ],
-  };
+  config.resolve.modulesDirectories = [
+    // the default value
+    // see https://webpack.github.io/docs/configuration.html#resolve-modulesdirectories
+    'web_modules',
+    'node_modules',
+    // only for resolving `webpack-hot-middleware/client`
+    path.join(__dirname, '../node_modules'),
+  ];
 
   let compiler = webpack(config, (err, stats) => {
     if (err) {

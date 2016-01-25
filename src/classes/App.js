@@ -16,6 +16,7 @@ export default class App {
     const rawErrorModule = requireRawModule(opts.dir.target, appPath, 'errors');
 
     // public member
+    this.appPath = appPath;
     this.name = path.parse(appPath).base;
     this.settings = requireFrom.target(this.name, 'settings');
     this.alias = this.settings.name;
