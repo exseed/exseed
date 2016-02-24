@@ -1,6 +1,6 @@
 {
   "name": "exseed",
-  "version": "0.1.15",
+  "version": "0.2.2",
   "description": "A highly extensible nodejs framework",
   "main": "dist/index.js",
   "scripts": {
@@ -30,6 +30,7 @@
     "express": "^4.13.3",
     "react": "^0.14.2",
     "react-dom": "^0.14.2",
+    "sails-memory": "^0.10.5",
     "waterline": "^0.10.26"
   },
   "devDependencies": {
@@ -47,7 +48,6 @@
     "gulp-notify": "^2.2.0",
     "gulp-sourcemaps": "^1.6.0",
     "rimraf": "^2.5.0",
-    "sails-memory": "^0.10.5",
     "webpack": "^1.9.6",
     "webpack-dev-middleware": "^1.2.0",
     "webpack-hot-middleware": "^2.4.1"
